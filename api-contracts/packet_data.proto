@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package packet_inspector;
+
+// Opzione necessaria per Go: indica la cartella di destinazione del pacchetto
+option go_package = "./router;router";
+
+// La struttura esatta del pacchetto che i tre linguaggi si scambieranno
+message NetworkPacket {
+    string source_ip = 1;
+    string dest_ip = 2;
+    int32 source_port = 3;
+    int32 dest_port = 4;
+    string protocol = 5;      // Es: "TCP", "UDP"
+    bytes raw_payload = 6;    // I dati veri e propri (dove cercheremo le password)
+    int64 timestamp_ms = 7;   // Timestamp per calcolare le latenze
+}
