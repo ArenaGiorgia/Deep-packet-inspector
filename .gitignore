@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.env
+
+# Go
+/router-go/router
+*.exe
+
+# C++
+/sensor-cpp/build/
+*.o
+*.out
+
+# Varie e OS
+.DS_Store
+.vscode/
