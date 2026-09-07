@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  sensor-cpp:
+    build:
+      context: ./sensor-cpp
+      dockerfile: Dockerfile
+    container_name: cpp-sensor
+    # I permessi NET_ADMIN e NET_RAW sono necessari a libpcap per catturare i pacchetti di rete
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    networks:
+      - inspection-net
+    depends_on:
+      - router-go
+
+  router-go:
+    build:
+      context: ./router-go
+      dockerfile: Dockerfile
+    container_name: go-router
+    ports:
+      - "8080:8080"
+    networks:
+      - inspection-net
+
+  analyzer-python:
+    build:
+      context: ./analyzer-python
+      dockerfile: Dockerfile
+    container_name: python-analyzer
+    networks:
+      - inspection-net
+
+networks:
+  inspection-net:
+    driver: bridge
