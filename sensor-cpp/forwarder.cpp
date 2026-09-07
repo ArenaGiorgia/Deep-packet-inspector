@@ -46,6 +46,9 @@ bool InoltroTraffico::connetti_socket() {
     int risultato_connessione = connect(socket_fd, (struct sockaddr*)&indirizzo_server, sizeof(indirizzo_server));
     if (risultato_connessione < 0) {
         close(socket_fd); // Se Go non risponde, riagganciamo
+        
+    //Quando il sistema operativo crea un socket valido, gli assegna un numero intero positivo 
+    //(0, 1, ecc.).Inizializzarlo a -1 è la convenzione standard per indicare "nessuna connessione attiva".
         socket_fd = -1;
         return false;
     }
@@ -75,7 +78,7 @@ void InoltroTraffico::ferma() {
         thread_invio.join();
     }
 
-    // Chiudiamo fisicamente la connessione di rete
+    // Chiudiamo fisicamente la connessione di rete, rilasciando la risorsa di rete
     if (socket_fd != -1) {
         close(socket_fd);
         socket_fd = -1;
@@ -87,7 +90,7 @@ void InoltroTraffico::ciclo_di_invio() {
     
     while (attivo) {
         
-        //se la coda è vuota, il thread si mette a dormire da solo non consumando  CPU.
+        //preleviamo il pacchetto, se la coda è vuota, il thread si mette a dormire da solo non consumando  CPU.
         auto pacchetto_ricevuto = coda.pop();
 
         // Se pop() restituisce nullptr, significa che il programma si sta spegnendo

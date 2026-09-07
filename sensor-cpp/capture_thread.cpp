@@ -7,7 +7,7 @@
 
 //costruttore MIL 
 CatturaTraffico::CatturaTraffico(CodaPacchetti& coda_condivisa, const std::string& nome_interfaccia)
-    : coda(coda_condivisa), interfaccia(nome_interfaccia), sessione_pcap(nullptr), attivo(false) {
+    : coda(coda_condivisa), interfaccia(nome_interfaccia), sessione(nullptr), attivo(false) {
     // Inizializziamo le variabili. All'inizio la sessione è vuota e non siamo attivi.
 }
 
@@ -26,20 +26,21 @@ void CatturaTraffico::avvia() {
     char buffer_errori[PCAP_ERRBUF_SIZE]; 
 
     //Apriamo la sessione di ascolto direttamente sul kernel.
-    //Parametri: nome scheda, byte massimi da leggere (65535), 
+    //nome scheda, c_str() Converte la stringa C++ in una stringa C-style compatibile con la libreria.
+    // byte massimi da leggere (65535 "MTU" massimo, ovvero la dimensione massima in byte che un pacchetto IP può avere) 
     //modalità promiscua (1), costringe la scheda di rete a leggere tutto il traffico passante. 
     //timeout in ms (1000), buffer errori
-    sessione_pcap = pcap_open_live(interfaccia.c_str(), 65535, 1, 1000, buffer_errori);
+    sessione = pcap_open_live(interfaccia.c_str(), 65535, 1, 1000, buffer_errori);
 
-    if (sessione_pcap == nullptr) {
-        std::cerr << "Errore critico pcap: " << buffer_errori << "\n";
+    if (sessione == nullptr) {
+        std::cerr << "Errore critico: " << buffer_errori << "\n";
         return; // Se fallisce, interrompiamo tutto
     }
 
     //per avviare il ciclo while continuo 
     attivo = true;
 
-    // 2. Lanciamo il lavoratore (thread) in background, dicendogli di eseguire la funzione "cattura"
+    //Lanciamo il lavoratore (thread) in background, dicendogli di eseguire la funzione "cattura"
     thread_cattura = std::thread(&CatturaTraffico::cattura, this);
 }
 
@@ -58,9 +59,9 @@ void CatturaTraffico::ferma() {
     }
 
     //Chiudiamo ufficialmente la sessione col sistema operativo
-    if (sessione_pcap != nullptr) {
-        pcap_close(sessione_pcap);
-        sessione_pcap = nullptr;
+    if (sessione != nullptr) {
+        pcap_close(sessione);
+        sessione = nullptr;
     }
 }
 
@@ -73,7 +74,7 @@ void CatturaTraffico::cattura() {
     //fin quando non stoppiamo 
     while (attivo) {
         // Chiediamo alla scheda di rete: "C'è un pacchetto?"
-        int risultato = pcap_next_ex(sessione_pcap, &intestazione_pcap, &byte_grezzi);
+        int risultato = pcap_next_ex(sessione, &intestazione_pcap, &byte_grezzi);
 
         if (risultato == 1) { 
             // 1 significa che abbiamo catturato un pacchetto con successo!

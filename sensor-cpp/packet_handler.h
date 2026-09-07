@@ -4,11 +4,12 @@
 #include <mutex>  //per gestire i thread
 #include <condition_variable> //meccanismo avanzato dei thread
 #include <memory>  //introduce lo unique pointer
-#include "packet_data.pb.h" 
+#include "packet_data.pb.h" //per il protobuffer 
 
 class CodaPacchetti {
 private:
-    //La struttura dati reale che conterrà i pacchetti in fila
+    //Stiamo dichiarando una coda (std::queue) che contiene oggetti esclusivi (unique_ptr) di tipo 
+    //NetworkPacket (la classe generata dal tuo file .proto).
     std::queue<std::unique_ptr<packet_inspector::NetworkPacket>> coda;
     
     //Semafori per evitare che due thread accedano alla coda contemporaneamente
@@ -20,17 +21,17 @@ private:
       Verrà risvegliato istantaneamente solo quando il pacchetto è pronto (tramite il metodo push).
     */
     
-    //lo settiamo in vero se dobbiamo spegnere il programma 
-    bool spegnimento = false; //normale funzionamento essendo in false 
+    //Quando diventerà true, dirà a chi sta aspettando pacchetti di smettere di aspettare e chiudere tutto.
+    bool spegnimento = false; 
 
 public:
-    // Metodo per il PRODUCER: Inserisce un nuovo pacchetto nella coda
+    //Metodo per il PRODUCER: Inserisce un nuovo pacchetto nella coda
     void push(std::unique_ptr<packet_inspector::NetworkPacket> packet);
 
-    // Metodo per il CONSUMER: Preleva il pacchetto più vecchio
+    // Metodo per il CONSUMER: estrae il primo pacchetto disponibile, lo rimuove dalla coda e lo restituisce 
     std::unique_ptr<packet_inspector::NetworkPacket> pop();
      //Restituisce un puntatore nullo se la coda è in fase di spegnimento
 
-    // Metodo per sbloccare tutti e chiudere il programma pulitamente
+    //Cambia la variabile spegnimento in true e sveglia eventuali thread addormentati.
     void stop();
 };

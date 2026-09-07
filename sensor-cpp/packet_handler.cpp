@@ -7,16 +7,18 @@ senza causare memory leak o crash.*/
 
 
 // PRODUCER: Inserisce i pacchetti nella coda
-void CodaPacchetti::push(std::unique_ptr<packet_inspector::NetworkPacket> packet) {
+void CodaPacchetti::push(std::unique_ptr<packet_inspector::NetworkPacket> pacchetto) {
     
     //Mettiamo in pausa gli altri thread finché non abbiamo finito di inserire
     std::lock_guard<std::mutex> blocco_esclusivo(mutex); 
    // un blocco intelligente basato su una regola chiamata RAII (Resource Acquisition Is Initialization).
-   // Appena questa riga viene eseguita, il mutex viene bloccato. 
-   //Il blocco si sblocca da solo non appena la funzione termina.
-    
-    //Spostiamo il pacchetto dentro la nostra coda (usiamo move per non copiare dati pesanti)
-    coda.push(std::move(packet));
+  /*Invece di bloccare il semaforo a mano con mutex.lock() e ricordarci di sbloccarlo alla fine con 
+   mutex.unlock(), usiamo lock_guard. Appena questa riga viene eseguita, il semaforo diventa rosso.
+   Quando la funzione finisce, l'oggetto blocco viene distrutto automaticamente dal C++ e il semaforo 
+   torna verde.*/
+
+    //Spostiamo il pacchetto dentro la nostra coda (Non stiamo facendo una copia del pacchetto in memoria)
+    coda.push(std::move(pacchetto));
     
     //Svegliamo il consumer per avvisarlo che c'è un nuovo pacchetto pronto
     condizione.notify_one();
@@ -24,7 +26,7 @@ void CodaPacchetti::push(std::unique_ptr<packet_inspector::NetworkPacket> packet
 
 
 
-//CONSUMER: Preleva i pacchetti dalla coda
+//CONSUMER: estrai i pacchetti dalla coda
 std::unique_ptr<packet_inspector::NetworkPacket> CodaPacchetti::pop() {
 
 
@@ -44,8 +46,7 @@ std::unique_ptr<packet_inspector::NetworkPacket> CodaPacchetti::pop() {
         return nullptr;
     }
 
-    //Se siamo qui, significa che c'è un pacchetto. Lo prendiamo, lo togliamo alla coda
-    //e lo mettiamo in pacchetto estratto.
+    //c'è un pacchetto. Lo prendiamo, lo togliamo alla coda e lo mettiamo in pacchetto estratto.
     auto pacchetto_estratto = std::move(coda.front()); 
     //coda.front legge il primo pacchetto in cima alla fila senza rimuoverlo.
     
@@ -66,6 +67,6 @@ void CodaPacchetti::stop() {
     
     //Svegliamo gli eventuali thread rimasti addormentati in attesa
     //A differenza di notify_one (che sveglia un thread a caso), questo sveglia tutti i thread in ascolto.
-    // Costringe tutti i consumatori a svegliarsi,
+    //Costringe tutti i consumatori a svegliarsi,
     condizione.notify_all();
 }

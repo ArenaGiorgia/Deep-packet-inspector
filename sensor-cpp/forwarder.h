@@ -14,8 +14,10 @@ private:
     CodaPacchetti& coda;
 
     //coordinate del microservizio di GO 
-    //L'indirizzo IP (es. "127.0.0.1") e la porta (es. 8080) a cui spediremo i dati
+    //L'indirizzo IP (es. "127.0.0.1") 
     std::string indirizzo_ip;
+
+    //la porta (es. 8080) a cui spediremo i dati
     int porta;
 
     //La socket come canale di comunicazione
@@ -23,10 +25,10 @@ private:
     int socket_fd; 
 
     
-    // Thread-safe, per spegnere il cameriere in modo pulito
+    // Thread-safe, per lo spegnimento in modo pulito
     std::atomic<bool> attivo;
 
-    //per lavorare in backgorund 
+    //per lavorare in backgorund e inoltrare i pacchetti 
     std::thread thread_invio;
 
     
@@ -35,7 +37,7 @@ private:
     /*Qui dentro userò la funzione pop() che ho scritto in CodaPacchetti. Prenderò il pacchetto, chiederò
      a Protobuf di convertirlo in un array di byte (serializzazione) e lo invierò sul socket*/
 
-    //Funzione privata di supporto: tenta di stabilire la connessione con Go
+    //Tenta di instaurare la connessione TCP con Go
     bool connetti_socket();
 
 public:

@@ -1,13 +1,11 @@
 #pragma once
 
-#include <string>
+#include <string> 
 #include <thread>
-#include <atomic>
+#include <atomic> //Questa è la libreria fondamentale per le variabili condivise non protette da un semaforo (mutex).
 
 // La libreria standard internazionale per intercettare il traffico di rete
-#include <pcap.h> 
-
-// Includiamo il nostro "bancone" dove appoggeremo i pacchetti catturati
+#include <pcap.h> //Su Linux si traduce nella libreria libpcap
 #include "packet_handler.h" 
 
 class CatturaTraffico {
@@ -21,7 +19,7 @@ private:
     
     // Questo è un puntatore speciale fornito dalla libreria pcap. 
     // Rappresenta la nostra "sessione di ascolto" aperta direttamente sul kernel del PC.
-    pcap_t* sessione_pcap;
+    pcap_t* sessione;
    // Usiamo il puntatore * perché noi non creiamo la sessione a mano, 
    //ma chiediamo al sistema operativo di crearla per noi e ce la restiuisce per permetterci di gestirla
 
