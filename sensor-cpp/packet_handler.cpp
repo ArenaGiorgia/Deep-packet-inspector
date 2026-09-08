@@ -6,7 +6,7 @@ senza causare memory leak o crash.*/
 #include "packet_handler.h" //richiamiamo la classe codaPacchetti 
 
 
-// PRODUCER: Inserisce i pacchetti nella coda
+//capture_thread (producer): Inserisce i pacchetti nella coda
 void CodaPacchetti::push(std::unique_ptr<packet_inspector::NetworkPacket> pacchetto) {
     
     //Mettiamo in pausa gli altri thread finché non abbiamo finito di inserire
@@ -20,25 +20,24 @@ void CodaPacchetti::push(std::unique_ptr<packet_inspector::NetworkPacket> pacche
     //Spostiamo il pacchetto dentro la nostra coda (Non stiamo facendo una copia del pacchetto in memoria)
     coda.push(std::move(pacchetto));
     
-    //Svegliamo il consumer per avvisarlo che c'è un nuovo pacchetto pronto
+    //Svegliamo il consumer per avvisarlo che c'è un nuovo pacchetto pronto 
     condizione.notify_one();
 }
 
 
 
-//CONSUMER: estrai i pacchetti dalla coda
+//forwarder(consumer): estrai i pacchetti dalla coda
 std::unique_ptr<packet_inspector::NetworkPacket> CodaPacchetti::pop() {
 
 
-    //Simile a lock_guard, ma più flessibile. Può essere bloccato e sbloccato manualmente a piacimento
-    //(unique_lock infatti lavora in coppia con la variabile "condizione")
+    //Simile a lock_guard, ma più flessibile. Puo essere sbloccato quando il producer inserisce un nuovo pacchetto in coda
+    //unique_lock lavora in coppia con la variabile "condizione"
     std::unique_lock<std::mutex> blocco(mutex); 
 
     
     //Mettiamo in pausa il thread finché la coda è vuota. 
-    //Si sveglia da solo se arriva un pacchetto o se premiamo il tasto di spegnimento.
-    while (coda.empty() && !spegnimento) {
-        condizione.wait(blocco);
+    while (coda.empty() && !spegnimento) { //coda vuota e spegnimento=FALSE che diventa con ! VERO 
+        condizione.wait(blocco); //apre il lucchetto unique_lock e aspetta che arriva notify_one
     }
 
     //Se stiamo spegnendo il programma e non ci sono più pacchetti, restituiamo nulla.
@@ -67,6 +66,6 @@ void CodaPacchetti::stop() {
     
     //Svegliamo gli eventuali thread rimasti addormentati in attesa
     //A differenza di notify_one (che sveglia un thread a caso), questo sveglia tutti i thread in ascolto.
-    //Costringe tutti i consumatori a svegliarsi,
+    //Costringe tutti i consumatori a svegliarsi,ma ovviamente solo 1 prenderà il pacchetto 
     condizione.notify_all();
 }
