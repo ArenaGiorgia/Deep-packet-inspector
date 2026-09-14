@@ -16,20 +16,19 @@ private:
     std::mutex mutex;
     
     std::condition_variable condizione; 
-    /*Invece di far girare il forwarder a vuoto chiedendo alla coda "Ci sono pacchetti?
-     Ci sono pacchetti?"questa variabile addormenta il Forwarder(consumer).
-      Verrà risvegliato istantaneamente solo quando il pacchetto è pronto tramite il metodo push 
-      che fara poi un notify_one .
+    /*Invece di far girare il consumer a vuoto chiedendo alla coda "Ci sono pacchetti?
+     Ci sono pacchetti?"questa variabile addormenta il consumer. Verrà risvegliato istantaneamente solo 
+     quando il pacchetto è pronto tramite il metodo push che fara poi un notify_one .
     */
     
     //Quando diventerà true, dirà a chi sta aspettando pacchetti di smettere di aspettare e chiudere tutto.
     bool spegnimento = false; 
 
 public:
-    //metodo per il capture_thread (producer):  Inserisce un nuovo pacchetto nella coda
+    //metodo per il producer:  Inserisce un nuovo pacchetto nella coda
     void push(std::unique_ptr<packet_inspector::NetworkPacket> pacchetto);
 
-    //metodo per il forwarder_thread (consumer) : estrae il primo pacchetto disponibile, lo rimuove dalla coda 
+    //metodo per il consumer: estrae il primo pacchetto disponibile, lo rimuove dalla coda 
     std::unique_ptr<packet_inspector::NetworkPacket> pop();
      //Restituisce un puntatore nullo se la coda è in fase di spegnimento
 

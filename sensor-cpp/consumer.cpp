@@ -3,18 +3,16 @@ Legge gli header di base (IP e porte), popola la struttura Protobuf, serializza 
  compresso e li spara via socket di rete verso il microservizio in Go.*/
 
 #include "consumer.h"
-#include <iostream>
-
-// Librerie standard di Linux/Mac per gestire le connessioni di rete (Socket)
-#include <sys/socket.h>
-#include <arpa/inet.h>
+#include <iostream> 
+#include <sys/socket.h> // Librerie standard di Linux/Mac per gestire le connessioni di rete (Socket)
+#include <arpa/inet.h> //tradurre le "coordinate" della connessione (indirizzo IP e porta) dal formato leggibile dal computer locale a quello standard richiesto dalla rete.
 #include <unistd.h>
 
 //costruttore 
 InoltroTraffico::InoltroTraffico(CodaPacchetti& coda_condivisa, const std::string& ip_destinazione, int porta_destinazione)
     : coda(coda_condivisa), indirizzo_ip(ip_destinazione), porta(porta_destinazione), socket_fd(-1), attivo(false) {
-    // MIL: socket_fd parte da -1 perché nei sistemi operativi 
-    // i file descriptor validi partono da 0 in su. -1 significa "nessuna connessione".
+    //socket_fd parte da -1 perché nei sistemi operativi i file descriptor validi partono da 0 in su. 
+    //-1 significa "nessuna connessione".
 }
 
 //distruttore 
@@ -22,6 +20,11 @@ InoltroTraffico::~InoltroTraffico() {
     ferma(); //spegne tutto se l'oggetto viene distrutto
 }
 
+//Funzione privata per leggere lo stato in modo sicuro 
+bool InoltroTraffico::blocco_sicuro() {
+    std::lock_guard<std::mutex> blocco(mutex_stato);
+    return attivo;
+}
 
 //creazione canale di comunicazione 
 bool InoltroTraffico::connetti_socket() {
@@ -64,14 +67,22 @@ void InoltroTraffico::avvia() {
         return; 
     }
 
-    attivo = true;
+    {
+        // Acquisiamo il lucchetto prima di accendere il motore
+        std::lock_guard<std::mutex> blocco(mutex_stato);
+        attivo = true;
+    }
+
     thread_invio = std::thread(&InoltroTraffico::ciclo_di_invio, this);
 }
 
 void InoltroTraffico::ferma() {
-    if (!attivo) return;
-
-    attivo = false;
+    {
+        // Acquisiamo il lucchetto prima di spegnere
+        std::lock_guard<std::mutex> blocco(mutex_stato);
+        if (!attivo) return;
+        attivo = false;
+    }
 
     // Sincronizziamo il thread
     if (thread_invio.joinable()) {
@@ -88,7 +99,8 @@ void InoltroTraffico::ferma() {
 
 void InoltroTraffico::ciclo_di_invio() {
     
-    while (attivo) {
+    //Sostituito "attivo" con la chiamata sicura "is_attivo()"
+    while (blocco_sicuro()) {
         
         //preleviamo il pacchetto, se la coda è vuota, il thread si mette a dormire da solo non consumando  CPU.
         auto pacchetto_ricevuto = coda.pop();
@@ -107,4 +119,3 @@ void InoltroTraffico::ciclo_di_invio() {
         send(socket_fd, dati_serializzati.c_str(), dati_serializzati.size(), 0);
     }
 }
- 
