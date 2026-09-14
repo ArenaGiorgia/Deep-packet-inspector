@@ -2,10 +2,8 @@
 
 #include <string> 
 #include <thread>
-#include <atomic> //Questa è la libreria fondamentale per le variabili condivise non protette da un semaforo (mutex).
-
-// La libreria standard internazionale per intercettare il traffico di rete
-#include <pcap.h> //Su Linux si traduce nella libreria libpcap
+#include <mutex>  
+#include <pcap.h> // Su Linux si traduce nella libreria libpcap. La libreria standard per intercettare il traffico di rete
 #include "packet_handler.h" 
 
 class CatturaTraffico {
@@ -20,23 +18,22 @@ private:
     // Questo è un puntatore speciale fornito dalla libreria pcap. 
     // Rappresenta la nostra "sessione di ascolto" aperta direttamente sul kernel del PC.
     pcap_t* sessione;
-   // Usiamo il puntatore * perché noi non creiamo la sessione a mano, 
-   //ma chiediamo al sistema operativo di crearla per noi e ce la restiuisce per permetterci di gestirla
+    // Usiamo il puntatore * perché noi non creiamo la sessione a mano, 
+    // ma chiediamo al sistema operativo di crearla per noi e ce la restiuisce per permetterci di gestirla
 
-    // std::atomic garantisce che leggere e scrivere questa variabile sia sicuro al 100% 
-    //anche se due thread lo fanno nello stesso millisecondo, senza bisogno di usare un mutex.
-    std::atomic<bool> attivo;
-    /*con un classico bool andresti incontro a un grosso problema. Dato che il programma principale 
-    (che preme lo stop) e il thread di cattura (che gira in background) lavorano in parallelo, 
-    potrebbero provare a leggere e modificare quel bool nello stesso identico millisecondo. 
-    Questo in C++ si chiama Data Race e fa crashare l'applicazione. Per usare un bool normale in 
-    sicurezza, saresti costretta a creare un nuovo std::mutex (un altro semaforo) e usare un lock_guard 
-    ogni singola volta che vuoi anche solo leggere il valore della variabile.
-    std::atomic<bool> serve proprio a evitarti tutto questo lavoro extra.
-    È semplicemente un booleano che dice al processore di gestire le letture e le scritture in modo 
-    totalmente sicuro e istantaneo, senza bisogno di  scrivere il codice per i semafori.
-    */ 
+    // Variabile di stato e semaforo dedicato per lo spegnimento sicuro
+    bool attivo;
+    std::mutex mutex_stato;
+    /* 
+    Dato che il programma principale (che preme lo stop) e il thread producer (che gira in background) 
+    lavorano in parallelo, potrebbero provare a leggere e modificare questa variabile nello stesso 
+    identico millisecondo. Questo in C++ si chiama Data Race e fa crashare l'applicazione. 
+    Usiamo un lock_guard ogni singola volta che vogliamo leggere o scrivere il valore della variabile 
+    tramite la funzione is_attivo(). 
+   */ 
 
+    // Funzione privata per leggere lo stato in modo sicuro (lock_guard)
+    bool blocco_sicuro();
 
     // L'oggetto che staccherà il lavoro dal programma principale per farlo girare in background.
     std::thread thread_cattura;

@@ -2,9 +2,7 @@
 
 #include <string>
 #include <thread>
-#include <atomic>
-
-// Includiamo il nostro "bancone" da cui prelevare i pacchetti
+#include <mutex> 
 #include "packet_handler.h"
 
 class InoltroTraffico {
@@ -25,8 +23,13 @@ private:
     int socket_fd; 
 
     
-    // Thread-safe, per lo spegnimento in modo pulito
-    std::atomic<bool> attivo;
+    // Variabile di stato e semaforo dedicato per lo spegnimento in modo pulito
+    bool attivo;
+
+    std::mutex mutex_stato; //mutex per proteggere il bool  
+
+    // Funzione privata per leggere lo stato in modo sicuro 
+    bool blocco_sicuro();
 
     //per lavorare in backgorund e inoltrare i pacchetti 
     std::thread thread_invio;
@@ -47,7 +50,7 @@ public:
     // Distruttore: pulisce la memoria e chiude la connessione
     ~InoltroTraffico();
 
-    // Metodi per accendere e spegnere il Forwarder dall'esterno
+    // Metodi per accendere e spegnere il consumer dall'esterno
     void avvia();
     void ferma();
 };

@@ -6,7 +6,7 @@ senza causare memory leak o crash.*/
 #include "packet_handler.h" //richiamiamo la classe codaPacchetti 
 
 
-//capture_thread (producer): Inserisce i pacchetti nella coda
+//producer: Inserisce i pacchetti nella coda
 void CodaPacchetti::push(std::unique_ptr<packet_inspector::NetworkPacket> pacchetto) {
     
     //Mettiamo in pausa gli altri thread finché non abbiamo finito di inserire
@@ -26,7 +26,7 @@ void CodaPacchetti::push(std::unique_ptr<packet_inspector::NetworkPacket> pacche
 
 
 
-//forwarder(consumer): estrai i pacchetti dalla coda
+//consumer: estrai i pacchetti dalla coda
 std::unique_ptr<packet_inspector::NetworkPacket> CodaPacchetti::pop() {
 
 

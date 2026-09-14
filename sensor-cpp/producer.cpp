@@ -18,6 +18,13 @@ CatturaTraffico::~CatturaTraffico() {
     ferma(); 
 }
 
+// Funzione privata per leggere lo stato in modo sicuro 
+bool CatturaTraffico::blocco_sicuro() {
+    // Il lock_guard chiude il mutex. Nessuno può scrivere mentre leggiamo.
+    std::lock_guard<std::mutex> blocco(mutex_stato);
+    return attivo;
+} // Alla fine di questa parentesi, il blocco si distrugge e il mutex si riapre da solo.
+
 
 //Accensione 
 void CatturaTraffico::avvia() {
@@ -37,8 +44,12 @@ void CatturaTraffico::avvia() {
         return; // Se fallisce, interrompiamo tutto
     }
 
-    //per avviare il ciclo while continuo 
-    attivo = true;
+    {
+        // Semaforo rosso: acquisiamo il lucchetto solo per il tempo necessario a modificare la variabile
+        std::lock_guard<std::mutex> blocco(mutex_stato);
+        //per avviare il ciclo while continuo 
+        attivo = true;
+    } // Semaforo verde: il lucchetto si rilascia qui
 
     //Lanciamo il lavoratore (thread) in background, dicendogli di eseguire la funzione "cattura"
     thread_cattura = std::thread(&CatturaTraffico::cattura, this);
@@ -47,13 +58,17 @@ void CatturaTraffico::avvia() {
 
 //spegnimento 
 void CatturaTraffico::ferma() {
-    if (!attivo) return; // Se siamo già fermi usciamo
-    
-    //Questo farà uscire il thread dal suo ciclo "while"
-    attivo = false; 
+    {
+        // Prendiamo il lucchetto per controllare e modificare lo stato in modo sicuro
+        std::lock_guard<std::mutex> blocco(mutex_stato);
+        if (!attivo) return; //Se il Producer è già spento, la funzione esce immediatamente senza fare danni
+        
+        //Questo farà uscire il thread dal suo ciclo "while (blocco_sicuro())"
+        attivo = false; 
+    } // Il mutex si sblocca qui, PRIMA di aspettare la fine del thread con la join()
 
     //Per la sincronizzazione 
-    //Aspettiamo che il thread finisca l'ultimo giro e si riunisca in modo pulito al programma principale
+    //Aspettiamo che il thread del producer finisca l'ultimo giro e si riunisca in modo sicuro al programma principale
     if (thread_cattura.joinable()) {
         thread_cattura.join();
     }
@@ -68,11 +83,17 @@ void CatturaTraffico::ferma() {
 
 //Producer 
 void CatturaTraffico::cattura() {
-    struct pcap_pkthdr* intestazione_pcap; // Metadati (esempio: quando è stato catturato e quanto è lungo)
-    const u_char* byte_grezzi;             // Il contenuto fisico del pacchetto
+    
+    //questa struct è l header dalla cattura usata da libcap 
+    struct pcap_pkthdr* intestazione_pcap; //Metadati (esempio: quando è stato catturato e quanto è lungo)
+   
+    const u_char* byte_grezzi;
+    /* Il contenuto fisico del pacchetto, È un array di byte grezzi non strutturati. Contiene tutto: 
+    il frame Ethernet, l'intestazione IP, l'intestazione TCP/UDP e i dati dell'applicazione.*/
 
-    //fin quando non stoppiamo 
-    while (attivo) {
+    //fin quando non stoppiamo, chiamiamo la funzione sicura blocco_sicuro() 
+    while (blocco_sicuro()) {
+
         // Chiediamo alla scheda di rete: "C'è un pacchetto?"
         int risultato = pcap_next_ex(sessione, &intestazione_pcap, &byte_grezzi);
 
@@ -113,7 +134,6 @@ void CatturaTraffico::cattura() {
             //mandiamo il pacchetto nuovo alla coda 
             coda.push(std::move(pacchetto_nuovo));
         }
-        // Se risultato è 0 (timeout scaduto) il ciclo riparte da capo.
-        // Se è negativo, c'è un errore ma il ciclo continuerà o si fermerà se modifichiamo "attivo".
+        
     }
 }
