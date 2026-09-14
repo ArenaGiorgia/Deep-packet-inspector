@@ -9,8 +9,8 @@ avvia in parallelo i thread principali di cattura e inoltro */
 #include <chrono>
 
 #include "packet_handler.h"
-#include "capture_thread.h"
-#include "forwarder.h"
+#include "producer.h"
+#include "consumer.h"
 
 // Variabile atomica globale per gestire il segnale di interruzione da tastiera (Ctrl+C)
 std::atomic<bool> sistema_attivo(true);
@@ -36,7 +36,7 @@ int main() {
     CatturaTraffico producer(coda_condivisa, interfaccia_rete);
 
     //Creazione del Consumer (Spedisce i pacchetti Protobuf al microservizio Go)
-    std::string indirizzo_IP_Go = "127.0.0.1";
+    std::string indirizzo_IP_Go = "router";
     int porta_Go = 8080;
     InoltroTraffico consumer(coda_condivisa, indirizzo_IP_Go, porta_Go);
 
