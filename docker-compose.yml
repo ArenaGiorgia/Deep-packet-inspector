@@ -1,38 +1,45 @@
 version: '3.8'
 
-services:
-  sensor-cpp:
-    build:
-      context: ./sensor-cpp
-      dockerfile: Dockerfile
-    container_name: cpp-sensor
-    # I permessi NET_ADMIN e NET_RAW sono necessari a libpcap per catturare i pacchetti di rete
-    cap_add:
-      - NET_ADMIN
-      - NET_RAW
-    networks:
-      - inspection-net
-    depends_on:
-      - router-go
-
-  router-go:
-    build:
-      context: ./router-go
-      dockerfile: Dockerfile
-    container_name: go-router
-    ports:
-      - "8080:8080"
-    networks:
-      - inspection-net
-
-  analyzer-python:
-    build:
-      context: ./analyzer-python
-      dockerfile: Dockerfile
-    container_name: python-analyzer
-    networks:
-      - inspection-net
-
+# Creiamo una rete virtuale interna dedicata al nostro sistema
 networks:
-  inspection-net:
+  dpi_network:
     driver: bridge
+
+services:
+  # 1. Il Livello di Analisi (Python)
+  analyzer:
+    build: ./analyzer-python
+    networks:
+      - dpi_network
+    ports:
+      - "9001:9001/udp"
+
+  # 2. Il Gateway/Router (Go)
+  router:
+    build: ./router-go
+    networks:
+      - dpi_network
+    ports:
+      - "8080:8080"  # Porta per ricevere i dati dal Sensore
+      - "8081:8081"  # Porta per servire la Dashboard Web
+    depends_on:
+      - analyzer
+
+  # 3. Il Sensore Edge (C++)
+
+  sensor:
+    build: 
+      context: . 
+      dockerfile: sensor-cpp/Dockerfile
+    network_mode: "host" 
+    depends_on:
+      - router
+
+  # 4. Il Generatore di Traffico (Test)
+  generator:
+    build: ./traffic-generator
+    networks:
+      - dpi_network
+    # Lo facciamo partire con qualche secondo di ritardo per dare tempo al sistema di avviarsi
+    command: >
+      /bin/sh -c "sleep 5 && python -u generator.py"

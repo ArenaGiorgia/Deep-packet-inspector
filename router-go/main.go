@@ -1,9 +1,15 @@
 /*
- Fa esattamente quattro cose:
-    Gestione Segnali: Crea un canale per intercettare i segnali del sistema operativo .
-    Setup Rete (Ascolto): Apre la porta UDP 9000 mettendosi in attesa dei dati provenienti dal livello Edge .
-    Core CSP (Communicating Sequential Processes): Crea il packetChan, un Canale bufferizzato (in grado di tenere in memoria 100 pacchetti) che farà da canale di comunicazione sicuro tra i thread.
-    Graceful Shutdown: Usa il costrutto defer per programmare la chiusura pulita del socket e del canale un attimo prima che il programma finisca.
+ COMPOSITION ROOT & GATEWAY DI RETE
+ Questo modulo funge da punto di ingresso (main) dell'intera architettura Go.
+ Svolge quattro compiti architetturali fondamentali:
+ 1. Dependency Injection: Istanzia tutte le risorse hardware/software (Socket, Hub UI, Canali)
+    e le inietta nelle Goroutine.
+ 2. Modello CSP (Communicating Sequential Processes): Inizializza il canale bufferizzato
+    per la comunicazione sicura tra il thread di rete e il thread di elaborazione.
+ 3. Multi-Protocol Gateway: Accetta flussi TCP in ingresso (dal livello Edge C++) 
+    e instrada i payload elaborati via UDP (all'analizzatore Python).
+ 4. Graceful Shutdown: Intercetta i segnali del Sistema Operativo per eseguire
+    un teardown sicuro e deterministico delle risorse tramite il costrutto defer.
 */
 package main
 
@@ -11,6 +17,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -18,73 +25,139 @@ import (
 	"dpi/router/router"
 	"google.golang.org/protobuf/proto"
 )
+
 func main() {
-	fmt.Println("Avvio Router Go (Livello 4 - TCP Server per Sensore C++)...")
+	fmt.Println("Avvio Router Go (Livello 4 - Multi-Protocol Gateway)...")
 
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	// ==========================================
+	// FASE 1: INIZIALIZZAZIONE RISORSE 
+	// ==========================================
+	
+	// A. Istanziamo l'Hub WebSocket con il proprio stato incapsulato
+	wsHub := CreaHubDashboard()
 
-	// Ascolto TCP sulla porta 8080 concordata con il sensore C++[cite: 7, 8]
-	listener, err := net.Listen("tcp", "127.0.0.1:8080")
+	// B. Apriamo il socket UDP verso l'Analizzatore Python 
+	// B. Apriamo il socket UDP verso l'Analizzatore Python (Sfrutta il DNS interno di Docker)
+	pythonAddr, _ := net.ResolveUDPAddr("udp", "analyzer:9001")
+	pythonConn, err := net.DialUDP("udp", nil, pythonAddr)
+	if err != nil {
+		fmt.Println("Errore apertura connessione UDP verso Python:", err)
+		return
+	}
+
+	/* 
+	C. [PATTERN CSP] Creiamo il canale di comunicazione principale.
+	È un canale bufferizzato (capacità 100).
+	Se il traffico di rete (TCP) subisce un picco improvviso (burst) e il Consumer (Python)
+	è momentaneamente lento, i pacchetti vengono accodati in memoria senza bloccare 
+	il Producer (evitando colli di bottiglia a livello socket).
+	*/
+	packetChan := make(chan *router.NetworkPacket, 100)
+
+	// ==========================================
+	// FASE 2: AVVIO DEI MICROSERVIZI (Asincroni)
+	// ==========================================
+
+	// Avvio del server HTTP in una Goroutine dedicata per non bloccare il main
+	http.HandleFunc("/ws", wsHub.AccettaConnessioneWeb)
+	//  Diciamo a Go di servire i file statici (HTML/JS/CSS) dalla cartella "static"
+	http.Handle("/", http.FileServer(http.Dir("./static"))) 
+	
+	go func() {
+		fmt.Println("[DASHBOARD] Server Web in ascolto su http://127.0.0.1:8081")
+		http.ListenAndServe(":8081", nil)
+	}()
+
+	/* 
+	Avviamo la Goroutine "Consumer". Passiamo
+	il canale di lettura, l'Hub per la UI e il socket di uscita.
+	Il Consumer vivrà in background smistando il traffico in modo totalmente disaccoppiato.
+	*/
+	go AvviaSmistatorePacchetti(packetChan, wsHub, pythonConn)
+
+	// ==========================================
+	// FASE 3: SETUP LISTENER TCP (Da Sensore C++)
+	// ==========================================
+	
+	listener, err := net.Listen("tcp", "0.0.0.0:8080")
 	if err != nil {
 		fmt.Printf("Errore nell'avvio del listener TCP: %v\n", err)
 		return
 	}
-	// [PATTERN CSP]: Creiamo un canale bufferizzato capace di contenere 100 pacchetti in coda
-	packetChan := make(chan *router.NetworkPacket, 100) //Il numero 100 significa che è un Canale Bufferizzato: può immagazzinare fino a 100 pacchetti in coda prima di bloccarsi. Se per un attimo arrivano tantissimi pacchetti dalla rete e il Worker è occupato, i pacchetti non vanno persi ma si mettono in coda nel buffer.
+	fmt.Println("[TCP SERVER] In attesa di stream Protobuf dal sensore C++ su 0.0.0.0:8080...")
 
-	// Avviamo la Goroutine Worker (Consumer) passandogli il canale
-	/*Il suo unico scopo è stare in ascolto dall'altra parte del canale (packetChan),
-	 prelevare i pacchetti smistati dal Producer, filtrarli e inviarli a Python.*/
-	go StartWorker(packetChan)
+	// Configurazione del canale per intercettare CTRL+C (SIGINT/SIGTERM)
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
+	/* 
+	[GRACEFUL SHUTDOWN]: Il blocco defer viene accodato in memoria e garantisce 
+	l'esecuzione LIFO alla terminazione del main, rilasciando le risorse hardware
+	e chiudendo i canali per far spegnere dolcemente le Goroutine figlie[cite: 4].
+	*/
 	defer func() {
-		fmt.Println("\n[DEFER] Chiusura sicura del listener e dei canali in corso...")
-		close(packetChan) // Chiudiamo il canale per spegnere elegantemente il Worker
-		listener.Close()  // Chiudiamo il socket di ascolto TCP principale
+		fmt.Println("\n[DEFER] Avvio Teardown delle risorse...")
+		close(packetChan)    // Termina il range loop del Consumer[cite: 4]
+		pythonConn.Close()   // Rilascia la porta UDP
+		listener.Close()     // Rilascia la porta TCP
 	}()
 
-	// Goroutine di Ricezione (Producer)
-	/*Questa Goroutine agisce da Produttore: vive in un ciclo infinito, estrae i byte dalla porta 9000, li decodifica usando la funzione di Protobuf (proto.Unmarshal) e, tramite l'operatore freccia <-, infila il pacchetto pulito all'interno del canale, tornando immediatamente in ascolto.*/
+	/*
+	Goroutine di Accettazione (Acceptor Loop)
+	Vive in un ciclo infinito. Non appena un client si connette, la funzione Accept() 
+	si sblocca. Per evitare che un client blocchi l'ascolto di un secondo client,
+	il parsing dei dati viene delegato a una nuova Goroutine dedicata (modello thread-per-connection).
+	*/
 	go func() {
 		for {
 			conn, err := listener.Accept()
 			if err != nil {
-				return 
+				return // Esce silenziosamente se il listener viene chiuso dal defer
 			}
-
-			// Gestisce la connessione del client in una goroutine dedicata
-			go handleClient(conn, packetChan)
+			go leggiDalSensoreCPP(conn, packetChan)
 		}
 	}()
 
+	// ==========================================
+	// FASE 4: ATTESA SINCRONA
+	// ==========================================
+	
+	// Il main thread si blocca qui, in attesa di estrarre un segnale OS dal canale.
 	<-sigChan
-	/*L'operatore freccia senza nulla a sinistra significa "aspetta fermo qui finché non esce qualcosa dal canale sigChan".
-Le due Goroutine (Producer e Consumer) continueranno a lavorare in background all'infinito. Il programma si sbloccherà e si spegnerà (attivando il defer) solo quando premerai CTRL+C e il sistema operativo invierà il segnale fatidico in quel canale.*/
-	fmt.Println("\n[SEGNALE] Inizio procedura di Graceful Shutdown...")
+	fmt.Println("\n[SEGNALE] Spegnimento richiesto dall'utente.")
 }
 
-// Funzione per leggere lo stream di byte TCP inviato dal C++
-func handleClient(conn net.Conn, packetChan chan<- *router.NetworkPacket) {
+/*
+leggiDalSensoreCPP è il "Producer" della nostra architettura CSP.
+La firma utilizza 'chan<-' per indicare un canale di sola scrittura (Send-Only).
+Questo garantisce a livello di compilazione che il Producer non possa accidentalmente
+svuotare il canale, mantenendo un isolamento perfetto delle responsabilità.
+*/
+func leggiDalSensoreCPP(conn net.Conn, packetChan chan<- *router.NetworkPacket) {
+	// Assicura la chiusura del socket client al termine del flusso stream
 	defer conn.Close()
+	
 	buffer := make([]byte, 4096)
 
+	// Lettura continua del flusso di byte TCP (SOCK_STREAM)
 	for {
 		n, err := conn.Read(buffer)
 		if err != nil {
+			// io.EOF indica che il sensore C++ ha chiuso elegantemente la connessione
 			if err != io.EOF {
 				fmt.Printf("Errore di lettura TCP: %v\n", err)
 			}
-			break
+			break 
 		}
 
+		// Decodifica (Unmarshaling) del payload binario verso la struct Go nativa
 		packet := &router.NetworkPacket{}
 		err = proto.Unmarshal(buffer[:n], packet)
 		if err != nil {
-			continue
+			continue // In caso di pacchetto corrotto, lo ignora e prosegue
 		}
 
-		// Inserisce il pacchetto nel canale CSP sicuro
+		// Inserisce il pacchetto pulito nel canale bufferizzato verso il Consumer
 		packetChan <- packet
 	}
 }

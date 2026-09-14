@@ -89,6 +89,27 @@ void CatturaTraffico::cattura() {
             int64_t timestamp = (intestazione_pcap->ts.tv_sec * 1000LL) + (intestazione_pcap->ts.tv_usec / 1000);
             pacchetto_nuovo->set_timestamp_ms(timestamp);
 
+            // ==========================================
+            // PARSING DINAMICO DEL LIVELLO DI TRASPORTO
+            // ==========================================
+            // Assumendo un frame Ethernet (14 byte), andiamo a leggere il byte 23 
+            // che nel protocollo IPv4 rappresenta l'identificativo del protocollo di trasporto.
+            if (intestazione_pcap->caplen >= 34) { // Controlliamo che il pacchetto sia abbastanza grande
+                uint8_t protocollo_ip = byte_grezzi[23];
+                
+                if (protocollo_ip == 6) {
+                    pacchetto_nuovo->set_protocol("TCP");
+                } else if (protocollo_ip == 17) {
+                    pacchetto_nuovo->set_protocol("UDP");
+                } else if (protocollo_ip == 1) {
+                    pacchetto_nuovo->set_protocol("ICMP");
+                } else {
+                    pacchetto_nuovo->set_protocol("ALTRO");
+                }
+            } else {
+                pacchetto_nuovo->set_protocol("SCONOSCIUTO");
+            }
+
             //mandiamo il pacchetto nuovo alla coda 
             coda.push(std::move(pacchetto_nuovo));
         }

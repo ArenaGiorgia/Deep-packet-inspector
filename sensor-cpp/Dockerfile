@@ -18,7 +18,13 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Copiamo tutto il codice sorgente del sensore C++ dentro il container
-COPY . /app
+# (Nota: ora usa percorsi specifici perché il Build Context è la cartella principale)
+COPY sensor-cpp/ /app/
+COPY api-contracts/packet_data.proto /app/
+
+# Rigeneriamo i file Protobuf usando il compilatore interno di Ubuntu
+# per garantire la totale compatibilità delle versioni
+RUN protoc --cpp_out=. packet_data.proto
 
 # Creiamo la directory di build ed eseguiamo CMake
 RUN mkdir -p build && cd build && cmake .. && make

@@ -1,0 +1,3 @@
+# Libreria ufficiale di Google per la decodifica dei Protocol Buffers
+protobuf==4.25.3
+websockets==12.0

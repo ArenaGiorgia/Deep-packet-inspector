@@ -1,0 +1,86 @@
+/* Stile da Security Operations Center (SOC) */
+:root {
+    --bg-color: #0f172a;
+    --panel-bg: #1e293b;
+    --text-main: #f8fafc;
+    --accent-green: #10b981;
+    --accent-red: #ef4444;
+    --font-mono: 'Courier New', Courier, monospace;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+header {
+    width: 100%;
+    max-width: 800px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--panel-bg);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+h1 { 
+    margin: 0; 
+    font-size: 1.5rem; 
+    letter-spacing: 1px; 
+}
+
+#status-badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    background-color: #334155; /* Grigio di default */
+    transition: background-color 0.3s;
+}
+
+.status-connected { background-color: var(--accent-green) !important; }
+.status-disconnected { background-color: var(--accent-red) !important; }
+
+#alerts-container {
+    width: 100%;
+    max-width: 800px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.alert-card {
+    background-color: var(--panel-bg);
+    border-left: 5px solid var(--accent-red);
+    padding: 15px;
+    border-radius: 4px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    animation: slideIn 0.3s ease-out;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.alert-time {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    font-family: var(--font-mono);
+}
+
+.alert-message {
+    font-size: 0.95rem;
+    line-height: 1.4;
+    font-family: var(--font-mono);
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
