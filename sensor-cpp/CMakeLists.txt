@@ -21,9 +21,9 @@ include_directories(${Protobuf_INCLUDE_DIRS})
 # Elenchiamo tutti i file .cpp che devono essere presi e "fusi" nel programma finale chiamato "sensor"
 add_executable(sensor
     main.cpp
-    capture_thread.cpp
+    producer.cpp          
     packet_handler.cpp
-    forwarder.cpp
+    consumer.cpp          
     packet_data.pb.cc
 )
 
