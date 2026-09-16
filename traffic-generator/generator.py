@@ -79,7 +79,7 @@ class TrafficInjector:
             # Scelta pesata: 70% di probabilità traffico normale, 30% attacco
             scelta = random.choices(
                 population=["benign", "malicious_http", "malicious_ftp"],
-                weights=[0.7, 0.15, 0.15],
+                weights=[0.6, 0.20, 0.20],
                 k=1,
             )[0]
 
@@ -97,5 +97,5 @@ class TrafficInjector:
 
 
 if __name__ == "__main__":
-    injector = TrafficInjector(target_ip="127.0.0.1", target_port=8080)
+    injector = TrafficInjector(target_ip="router", target_port=8081)
     injector.start_simulation(iterations=15)

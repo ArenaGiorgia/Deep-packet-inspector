@@ -1,5 +1,3 @@
-version: '3.8'
-
 # Creiamo una rete virtuale interna dedicata al nostro sistema
 networks:
   dpi_network:
@@ -8,7 +6,9 @@ networks:
 services:
   # 1. Il Livello di Analisi (Python)
   analyzer:
-    build: ./analyzer-python
+    build:
+      context: .
+      dockerfile: analyzer-python/Dockerfile
     networks:
       - dpi_network
     ports:
@@ -26,12 +26,15 @@ services:
       - analyzer
 
   # 3. Il Sensore Edge (C++)
-
   sensor:
     build: 
       context: . 
       dockerfile: sensor-cpp/Dockerfile
-    network_mode: "host" 
+    
+    network_mode: "service:router"
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
     depends_on:
       - router
 

@@ -28,15 +28,10 @@ import (
 
 func main() {
 	fmt.Println("Avvio Router Go (Livello 4 - Multi-Protocol Gateway)...")
-
-	// ==========================================
 	// FASE 1: INIZIALIZZAZIONE RISORSE 
-	// ==========================================
-	
 	// A. Istanziamo l'Hub WebSocket con il proprio stato incapsulato
 	wsHub := CreaHubDashboard()
 
-	// B. Apriamo il socket UDP verso l'Analizzatore Python 
 	// B. Apriamo il socket UDP verso l'Analizzatore Python (Sfrutta il DNS interno di Docker)
 	pythonAddr, _ := net.ResolveUDPAddr("udp", "analyzer:9001")
 	pythonConn, err := net.DialUDP("udp", nil, pythonAddr)
@@ -54,10 +49,8 @@ func main() {
 	*/
 	packetChan := make(chan *router.NetworkPacket, 100)
 
-	// ==========================================
 	// FASE 2: AVVIO DEI MICROSERVIZI (Asincroni)
-	// ==========================================
-
+	
 	// Avvio del server HTTP in una Goroutine dedicata per non bloccare il main
 	http.HandleFunc("/ws", wsHub.AccettaConnessioneWeb)
 	//  Diciamo a Go di servire i file statici (HTML/JS/CSS) dalla cartella "static"
@@ -72,12 +65,12 @@ func main() {
 	Avviamo la Goroutine "Consumer". Passiamo
 	il canale di lettura, l'Hub per la UI e il socket di uscita.
 	Il Consumer vivrà in background smistando il traffico in modo totalmente disaccoppiato.
-	*/
-	go AvviaSmistatorePacchetti(packetChan, wsHub, pythonConn)
+	 [WORKER POOL]: Lanciamo 5 Goroutine per decodificare e smistare il traffico in parallelo*/
+	for i := 0; i < 5; i++ {
+		go AvviaSmistatorePacchetti(packetChan, wsHub, pythonConn)
+	}
 
-	// ==========================================
 	// FASE 3: SETUP LISTENER TCP (Da Sensore C++)
-	// ==========================================
 	
 	listener, err := net.Listen("tcp", "0.0.0.0:8080")
 	if err != nil {
@@ -86,6 +79,30 @@ func main() {
 	}
 	fmt.Println("[TCP SERVER] In attesa di stream Protobuf dal sensore C++ su 0.0.0.0:8080...")
 
+	// FASE 3.5: RICEZIONE ALLARMI DA PYTHON
+	
+	alertAddr, _ := net.ResolveUDPAddr("udp", "0.0.0.0:9002")
+	alertConn, errAlert := net.ListenUDP("udp", alertAddr)
+	if errAlert != nil {
+		fmt.Printf("Errore listener allarmi: %v\n", errAlert)
+	} else {
+		fmt.Println("[ALERTS] In ascolto di allarmi da Python su UDP 9002...")
+		
+		// Goroutine in background che ascolta costantemente la porta 9002
+		go func() {
+			buf := make([]byte, 4096)
+			for {
+				n, _, err := alertConn.ReadFromUDP(buf)
+				if err != nil { // Se c'è un errore, ferma tutto.
+					fmt.Printf("[ALERTS] Errore in lettura UDP: %v\n", err)
+					break
+				}
+				// Se non ci sono errori, diffondi l'allarme!
+				wsHub.DiffondiAllarme(buf[:n]) 
+			}
+		}()
+	}
+
 	// Configurazione del canale per intercettare CTRL+C (SIGINT/SIGTERM)
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
@@ -93,13 +110,16 @@ func main() {
 	/* 
 	[GRACEFUL SHUTDOWN]: Il blocco defer viene accodato in memoria e garantisce 
 	l'esecuzione LIFO alla terminazione del main, rilasciando le risorse hardware
-	e chiudendo i canali per far spegnere dolcemente le Goroutine figlie[cite: 4].
+	e chiudendo i canali per far spegnere dolcemente le Goroutine figlie.
 	*/
 	defer func() {
 		fmt.Println("\n[DEFER] Avvio Teardown delle risorse...")
-		close(packetChan)    // Termina il range loop del Consumer[cite: 4]
+		close(packetChan)    // Termina il range loop del Consumer
 		pythonConn.Close()   // Rilascia la porta UDP
 		listener.Close()     // Rilascia la porta TCP
+		if alertConn != nil {
+			alertConn.Close() // Rilascia la porta UDP degli allarmi
+		}
 	}()
 
 	/*
@@ -118,9 +138,7 @@ func main() {
 		}
 	}()
 
-	// ==========================================
 	// FASE 4: ATTESA SINCRONA
-	// ==========================================
 	
 	// Il main thread si blocca qui, in attesa di estrarre un segnale OS dal canale.
 	<-sigChan

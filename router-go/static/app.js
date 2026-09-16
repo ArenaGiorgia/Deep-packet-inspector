@@ -33,6 +33,14 @@ function aggiungiAllarme(testo) {
     const card = document.createElement('div');
     card.className = 'alert-card';
 
+    // ==========================================
+    // EFFETTO WOW: Controllo e cambio stile dinamico
+    // ==========================================
+    // Se il messaggio contiene la sirena o la parola MINACCIA, attiviamo l'allarme rosso!
+    if (testo.includes("🚨") || testo.includes("MINACCIA")) {
+        card.classList.add('threat-card');
+    }
+
     const timeSpan = document.createElement('span');
     timeSpan.className = 'alert-time';
     const now = new Date();

@@ -1,6 +1,25 @@
 import time
+from functools import wraps
 
 
+# DECORATORE CUSTOM misura il tempo di esecuzione CPU della singola funzione Python
+def misura_tempo_esecuzione(func):
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start_time = time.perf_counter()
+        risultato = func(*args, **kwargs)
+        end_time = time.perf_counter()
+
+        tempo_ms = (end_time - start_time) * 1000
+        print(f"[PROFILING] Funzione '{func.__name__}' elaborata in {tempo_ms:.4f} ms")
+
+        return risultato
+
+    return wrapper
+
+
+# CLASSE DI TELEMETRIA
 class PerformanceMonitor:
     """
     Modulo di telemetria per misurare la latenza end-to-end dell'architettura.

@@ -7,6 +7,10 @@ Legge gli header di base (IP e porte), popola la struttura Protobuf, serializza 
 #include <sys/socket.h> // Librerie standard di Linux/Mac per gestire le connessioni di rete (Socket)
 #include <arpa/inet.h> //tradurre le "coordinate" della connessione (indirizzo IP e porta) dal formato leggibile dal computer locale a quello standard richiesto dalla rete.
 #include <unistd.h>
+#include <netdb.h>      // Fornisce gethostbyname per risolvere nomi di dominio (come "router") in IP
+#include <cstring>      // Per gestire la memoria (memset, memcpy)
+#include <chrono>       // Per misurare i tempi di attesa (sleep)
+#include <thread>       // Per mettere in pausa il thread durante i tentativi di connessione
 
 //costruttore 
 InoltroTraffico::InoltroTraffico(CodaPacchetti& coda_condivisa, const std::string& ip_destinazione, int porta_destinazione)
@@ -37,13 +41,27 @@ bool InoltroTraffico::connetti_socket() {
 
     //Prepariamo l'indirizzo a cui "telefonare" (il microservizio Go)
     struct sockaddr_in indirizzo_server;
+    memset(&indirizzo_server, 0, sizeof(indirizzo_server)); // Puliamo la memoria per evitare "sporcizia"
     indirizzo_server.sin_family = AF_INET;
     
     // htons serve a convertire il numero della porta nel formato leggibile dalla rete (Network Byte Order)
     indirizzo_server.sin_port = htons(porta);
     
-    // Convertiamo l'indirizzo IP da stringa (es. "127.0.0.1") in formato binario
-    inet_pton(AF_INET, indirizzo_ip.c_str(), &indirizzo_server.sin_addr);
+    // ==========================================
+    // LOGICA DI RISOLUZIONE IBRIDA (IP numerico o Nome DNS)
+    // ==========================================
+    if (inet_pton(AF_INET, indirizzo_ip.c_str(), &indirizzo_server.sin_addr) <= 0) {
+        // Se non è un IP numerico (es. "127.0.0.1"), proviamo a risolverlo come nome di container
+        struct hostent* host = gethostbyname(indirizzo_ip.c_str());
+        if (host == nullptr) {
+            close(socket_fd);
+            socket_fd = -1;
+            return false; // Impossibile trovare l'host desiderato
+        }
+        // Copiamo l'indirizzo IP binario tradotto
+        memcpy(&indirizzo_server.sin_addr.s_addr, host->h_addr_list[0], host->h_length);
+    }
+    // ==========================================
 
     //Facciamo partire la "chiamata" verso Go
     int risultato_connessione = connect(socket_fd, (struct sockaddr*)&indirizzo_server, sizeof(indirizzo_server));
@@ -61,11 +79,21 @@ bool InoltroTraffico::connetti_socket() {
 
 //avviamento 
 void InoltroTraffico::avvia() {
+    
+    int tentativi_rimasti = 5;
+    while (tentativi_rimasti > 0 && !connetti_socket()) {
+        std::cerr << "[CONSUMER C++] In attesa che Go sia pronto... (" << tentativi_rimasti << " tentativi rimasti)" << std::endl;
+        std::this_thread::sleep_for(std::chrono::seconds(2)); // Aspetta 2 secondi prima di riprovare
+        tentativi_rimasti--;
+    }
+
     //assicuriamo che il client Go sia pronto a ricevere
-    if (!connetti_socket()) {
-        std::cerr << "Errore: Impossibile connettersi al microservizio Go.\n";
+    if (socket_fd == -1) {
+        std::cerr << "Errore CRITICO: Impossibile connettersi al microservizio Go." << std::endl;
         return; 
     }
+    
+    std::cout << "[CONSUMER C++] Connessione verso Go (" << indirizzo_ip << ":" << porta << ") stabilita!" << std::endl;
 
     {
         // Acquisiamo il lucchetto prima di accendere il motore
@@ -99,7 +127,7 @@ void InoltroTraffico::ferma() {
 
 void InoltroTraffico::ciclo_di_invio() {
     
-    //Sostituito "attivo" con la chiamata sicura "is_attivo()"
+    //Sostituito "attivo" con la chiamata sicura blocco sicuro"
     while (blocco_sicuro()) {
         
         //preleviamo il pacchetto, se la coda è vuota, il thread si mette a dormire da solo non consumando  CPU.

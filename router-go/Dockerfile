@@ -1,23 +1,23 @@
-# STAGE 1: Builder (Contiene il compilatore Go)
+# STAGE 1: Builder
 FROM golang:alpine AS builder
 WORKDIR /app
 
-# Copiamo TUTTO il codice subito (così Docker può leggere i file .go)
-COPY . .
+# FIX RETE AVANZATO: Proxy alternativo e disattivazione checksum
+ENV GOPROXY="https://goproxy.io,direct"
+ENV GOSUMDB="off"
 
-# MAGIC COMMAND: Legge i file .go, nota che manca 'gorilla/websocket' e lo scarica automaticamente
+COPY go.mod go.sum* ./
+RUN go mod download || go mod tidy
+
+COPY . .
 RUN go mod tidy
 
-# Disabilitiamo CGO per avere un binario statico indipendente al 100%
 RUN CGO_ENABLED=0 GOOS=linux go build -o router-go .
 
-# STAGE 2: Produzione (Immagine leggerissima da ~10MB)
+# STAGE 2: Produzione
 FROM alpine:latest
 WORKDIR /root/
-
-# Copiamo il binario dal builder
 COPY --from=builder /app/router-go .
-# Copiamo la cartella static per la Dashboard Web
 COPY --from=builder /app/static ./static
 
 EXPOSE 8080 8081

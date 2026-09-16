@@ -36,7 +36,7 @@ int main() {
     CatturaTraffico producer(coda_condivisa, interfaccia_rete);
 
     //Creazione del Consumer (Spedisce i pacchetti Protobuf al microservizio Go)
-    std::string indirizzo_IP_Go = "router";
+    std::string indirizzo_IP_Go = "127.0.0.1";
     int porta_Go = 8080;
     InoltroTraffico consumer(coda_condivisa, indirizzo_IP_Go, porta_Go);
 
