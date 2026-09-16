@@ -73,10 +73,10 @@ class TrafficInjector:
 
     def start_simulation(self, iterations: int = 20) -> None:
         print(f" Avvio Simulazione (Target: {self.target_ip}:{self.target_port})...")
-        print("Mischio traffico benigno (70%) e malevolo (30%).\n")
+        print("Mischio traffico benigno (60%) e malevolo (40%).\n")
 
         for i in range(iterations):
-            # Scelta pesata: 70% di probabilità traffico normale, 30% attacco
+            # Scelta pesata: 60% di probabilità traffico normale, 40% attacco
             scelta = random.choices(
                 population=["benign", "malicious_http", "malicious_ftp"],
                 weights=[0.6, 0.20, 0.20],
