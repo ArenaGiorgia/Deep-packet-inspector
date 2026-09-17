@@ -67,11 +67,16 @@ class AnalizzatoreLogico:
                 latenza = self.monitor.record_latency(packet.timestamp_ms)
 
                 # SESSION REASSEMBLY (Gestione TCP)
+                # FIX LOGICO: Ora passiamo tcp_flags invece di flag_tcp (in linea con il Protobuf!)
                 # L'uso delle f-strings garantisce efficienza e pulizia nell'interpolazione
                 session_id = f"{packet.source_ip}:{packet.source_port}-{packet.dest_ip}:{packet.dest_port}"
                 payload_assemblato = self.reassembler.aggiungi_segmento(
-                    session_id, packet.raw_payload, packet.seq_num, packet.flag_tcp
+                    session_id, packet.raw_payload, packet.seq_num, packet.tcp_flags
                 )
+
+                # Se payload_assemblato è None, significa che la sessione non è finita (o non c'era payload)
+                if not payload_assemblato:
+                    continue
 
                 # Deleghiamo l'ispezione (Pattern Matching)
                 minaccia_trovata, messaggio = self.ispettore.analizza_payload(
