@@ -7,7 +7,6 @@ env/
 .env
 
 # Go
-/router-go/router
 *.exe
 
 # C++
