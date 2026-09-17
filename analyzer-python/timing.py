@@ -2,56 +2,61 @@ import time
 from functools import wraps
 
 
-# DECORATORE CUSTOM misura il tempo di esecuzione CPU della singola funzione Python
+# DECORATORE: Misura il tempo di esecuzione di una funzione Python
 def misura_tempo_esecuzione(func):
+    """
+    Decoratore per il profiling delle prestazioni.
+    Sfrutta time.perf_counter() per la massima precisione temporale
+    e functools.wraps per preservare la docstring e il nome della funzione originale.
+    """
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        start_time = time.perf_counter()
+        # time.perf_counter misura il tempo di clock a precisione elevata
+        tempo_inizio = time.perf_counter()
         risultato = func(*args, **kwargs)
-        end_time = time.perf_counter()
+        tempo_fine = time.perf_counter()
 
-        tempo_ms = (end_time - start_time) * 1000
-        print(f"[PROFILING] Funzione '{func.__name__}' elaborata in {tempo_ms:.4f} ms")
+        tempo_ms = (tempo_fine - tempo_inizio) * 1000
+        print(f"[PROFILING] Funzione '{func.__name__}' eseguita in {tempo_ms:.4f} ms")
 
         return risultato
 
     return wrapper
 
 
-# CLASSE DI TELEMETRIA
 class PerformanceMonitor:
     """
     Modulo di telemetria per misurare la latenza end-to-end dell'architettura.
     Calcola il tempo trascorso dalla cattura hardware (C++) all'analisi software (Python).
     """
 
-    def __init__(self):
-        self.max_latency_ms = 0.0
-        self.total_packets = 0
-        self.cumulative_latency = 0.0
+    def __init__(self) -> None:
+        self.latenza_massima_ms: float = 0.0
+        self.pacchetti_totali: int = 0
+        self.latenza_cumulativa: float = 0.0
 
-    def record_latency(self, cplusplus_timestamp_ms: int) -> float:
+    def record_latency(self, timestamp_cplusplus_ms: int) -> float:
         """Calcola la latenza di un singolo pacchetto in millisecondi."""
-        if cplusplus_timestamp_ms == 0:
+        if timestamp_cplusplus_ms == 0:
             return 0.0  # Ignora se il timestamp non è valido
 
-        # Tempo attuale in millisecondi
-        current_time_ms = int(time.time() * 1000)
+        # Tempo attuale in millisecondi basato sull'orologio di sistema
+        tempo_attuale_ms = int(time.time() * 1000)
 
-        # Calcolo del delta
-        latency = current_time_ms - cplusplus_timestamp_ms
+        # Calcolo del delta temporale end-to-end
+        latenza = tempo_attuale_ms - timestamp_cplusplus_ms
 
-        # Aggiornamento delle statistiche
-        self.total_packets += 1
-        self.cumulative_latency += latency
-        if latency > self.max_latency_ms:
-            self.max_latency_ms = latency
+        # Aggiornamento delle metriche statistiche
+        self.pacchetti_totali += 1
+        self.latenza_cumulativa += latenza
+        if latenza > self.latenza_massima_ms:
+            self.latenza_massima_ms = latenza
 
-        return latency
+        return float(latenza)
 
     def get_average_latency(self) -> float:
         """Restituisce la latenza media dell'ecosistema."""
-        if self.total_packets == 0:
+        if self.pacchetti_totali == 0:
             return 0.0
-        return self.cumulative_latency / self.total_packets
+        return self.latenza_cumulativa / self.pacchetti_totali

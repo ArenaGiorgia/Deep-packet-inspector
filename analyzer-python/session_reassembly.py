@@ -1,29 +1,61 @@
-class TcpReassembler:
+import collections
+from typing import Dict, Tuple
+
+
+class RiassemblatoreTCP:
     """
     Gestisce la frammentazione del protocollo TCP.
-    In un ambiente di produzione, riassembla i segmenti separati in un unico stream
-    basandosi su IP Sorgente, IP Destinazione e Porte prima dell'ispezione DPI.
+    Riassembla i segmenti separati in un unico stream ordinato
+    sfruttando le code ad alte prestazioni (deque) e i Sequence Number.
     """
 
-    def __init__(self):
-        # Un dizionario per memorizzare i frammenti temporanei in base alla sessione
-        self._session_buffers = {}
+    def __init__(self) -> None:
+        # Dizionario che associa ogni ID di sessione a una coda (deque) ad alte prestazioni.
+        # La deque conterrà tuple immutabili strutturate come: (Sequence_Number, Payload_Binario).
+        self._buffer_sessioni: Dict[str, collections.deque] = {}
 
-    def add_segment(self, session_id: str, payload: bytes) -> bytes:
+    def aggiungi_segmento(
+        self, id_sessione: str, payload: bytes, seq_num: int, flag_tcp: int
+    ) -> bytes:
         """
-        Aggiunge un segmento al buffer di sessione.
-        (Versione Stub per dimostrazione architetturale)
+        Aggiunge un segmento alla coda di sessione, lo riordina tramite Sequence Number
+        e restituisce il flusso contiguo ricostruito.
         """
-        if session_id not in self._session_buffers:
-            self._session_buffers[session_id] = bytearray()
+        # Se la sessione è nuova, inizializziamo la doppia coda
+        # Utilizziamo deque in base alle linee guida di ottimizzazione per le code performanti.
+        if id_sessione not in self._buffer_sessioni:
+            self._buffer_sessioni[id_sessione] = collections.deque()
 
-        self._session_buffers[session_id].extend(payload)
+        # Inseriamo il nuovo frammento all'interno della deque.
+        # Le tuple sono ideali qui per garantire l'immutabilità della coppia (SeqNum, Dati).
+        self._buffer_sessioni[id_sessione].append((seq_num, payload))
 
-        # Per ora restituiamo direttamente il payload.
-        # In futuro, qui ci sarà la logica basata sui Sequence Number del TCP.
-        return bytes(self._session_buffers[session_id])
+        # Ordinamento dinamico in base al Sequence Number (il primo elemento della tupla: x[0]).
+        # Questo garantisce che i pacchetti arrivati fuori ordine vengano riallineati correttamente
+        # prima di essere passati all'analizzatore Regex.
+        coda_ordinata = sorted(self._buffer_sessioni[id_sessione], key=lambda x: x[0])
 
-    def clear_session(self, session_id: str) -> None:
-        """Pulisce la memoria quando la connessione TCP (FIN/RST) viene chiusa."""
-        if session_id in self._session_buffers:
-            del self._session_buffers[session_id]
+        # Riassemblaggio del payload completo
+        payload_completo = bytearray()
+        for _, dati in coda_ordinata:
+            payload_completo.extend(dati)
+
+        # GESTIONE CICLO DI VITA TCP (FIN / RST)
+        # I flag TCP sono contenuti in un singolo byte.
+        # Il flag FIN (Fine connessione normale) corrisponde al bit 0 (valore 1).
+        # Il flag RST (Reset connessione anomalo) corrisponde al bit 2 (valore 4).
+        # Usiamo l'operatore bit a bit AND (&) per mascherare ed estrarre i flag rilevanti.
+        if (flag_tcp & 0x01) != 0 or (flag_tcp & 0x04) != 0:
+            self.pulisci_sessione(id_sessione)
+
+        return bytes(payload_completo)
+
+    def pulisci_sessione(self, id_sessione: str) -> None:
+        """Pulisce la memoria eliminando i dati quando la connessione TCP viene chiusa."""
+        # PARADIGMA EAFP (Easier to Ask Forgiveness than Permission)
+        # Invece di verificare preventivamente se la chiave esiste (LBYL), tentiamo
+        # l'operazione direttamente e gestiamo l'eventuale errore a posteriori.
+        try:
+            del self._buffer_sessioni[id_sessione]
+        except KeyError:
+            pass  # La sessione era già stata rimossa o non è mai stata inizializzata
