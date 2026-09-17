@@ -82,18 +82,18 @@ void InoltroTraffico::avvia() {
     
     int tentativi_rimasti = 5;
     while (tentativi_rimasti > 0 && !connetti_socket()) {
-        std::cerr << "[CONSUMER C++] In attesa che Go sia pronto... (" << tentativi_rimasti << " tentativi rimasti)" << std::endl;
+        std::cerr << " Consumer di C++: in attesa che Go sia pronto... (" << tentativi_rimasti << " tentativi rimasti)" << std::endl;
         std::this_thread::sleep_for(std::chrono::seconds(2)); // Aspetta 2 secondi prima di riprovare
         tentativi_rimasti--;
     }
 
     //assicuriamo che il client Go sia pronto a ricevere
     if (socket_fd == -1) {
-        std::cerr << "Errore CRITICO: Impossibile connettersi al microservizio Go." << std::endl;
+        std::cerr << "Impossibile connettersi al microservizio Go." << std::endl;
         return; 
     }
     
-    std::cout << "[CONSUMER C++] Connessione verso Go (" << indirizzo_ip << ":" << porta << ") stabilita!" << std::endl;
+    std::cout << " Consumer di C++: connessione verso Go (" << indirizzo_ip << ":" << porta << ") stabilita" << std::endl;
 
     {
         // Acquisiamo il lucchetto prima di accendere il motore

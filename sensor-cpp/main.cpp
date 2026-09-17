@@ -17,7 +17,7 @@ std::atomic<bool> sistema_attivo(true);
 
 // Funzione richiamata automaticamente dal sistema operativo se premi Ctrl+C
 void gestore_segnali(int segnale) {
-    std::cout << "\nRicevuto segnale di stop (Ctrl+C o spegnimento Docker). Avvio dello spegnimento pulito...\n";
+    std::cout << "\n Ricevuto segnale di stop (Ctrl+C o spegnimento Docker) \n";
     sistema_attivo = false;
 }
 
@@ -26,7 +26,7 @@ int main() {
     std::signal(SIGINT, gestore_segnali);
     std::signal(SIGTERM, gestore_segnali);
 
-    std::cout << "Avvio di PACKET INSPECTION (C++) : \n";
+    std::cout << "Avvio di del packet inspector di C++ : \n";
 
     //Creazione della Coda condivisa
     CodaPacchetti coda_condivisa;
@@ -46,7 +46,7 @@ int main() {
     producer.avvia();
     consumer.avvia();
 
-    std::cout << "Sensore attivo e in ascolto sulla scheda " << interfaccia_rete << " Premi Ctrl+C per fermare.\n";
+    std::cout << " Sensore attivo e in ascolto sulla scheda: " << interfaccia_rete << " Premi Ctrl+C per fermare.\n";
 
     //Il thread principale si mette in pausa ricorsiva, lasciando lavorare i thread in background
     while (sistema_attivo) {

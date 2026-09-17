@@ -46,7 +46,7 @@ void CatturaTraffico::avvia() {
     if (pcap_compile(sessione, &filtro, regola_filtro.c_str(), 0, PCAP_NETMASK_UNKNOWN) != -1) {
         pcap_setfilter(sessione, &filtro);
     } else {
-        std::cerr << "[WARNING] Impossibile compilare il filtro BPF.\n";
+        std::cerr << "Impossibile compilare il filtro BPF.\n";
     }
     
 
