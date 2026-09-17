@@ -127,7 +127,7 @@ void InoltroTraffico::ferma() {
 
 void InoltroTraffico::ciclo_di_invio() {
     
-    //Sostituito "attivo" con la chiamata sicura blocco sicuro"
+    //Sostituito "attivo" con la chiamata sicura blocco_sicuro()
     while (blocco_sicuro()) {
         
         //preleviamo il pacchetto, se la coda è vuota, il thread si mette a dormire da solo non consumando  CPU.
@@ -142,8 +142,17 @@ void InoltroTraffico::ciclo_di_invio() {
         std::string dati_serializzati;
         pacchetto_ricevuto->SerializeToString(&dati_serializzati);
 
-        //Inviamo i byte attraverso la socket verso Go
-        //passiamo la socket, i dati da inviare, la grandezza dei dati, 0 (nessun flag speciale)
+        // ==========================================
+        // FIX ARCHITETTURALE: TCP FRAMING (Length-Prefix)
+        // ==========================================
+        // Diciamo a Go la dimensione esatta del pacchetto prima di inviarlo.
+        // htonl() converte l'intero a 32 bit nel Network Byte Order (Big Endian)
+        uint32_t dimensione_pacchetto = htonl(dati_serializzati.size());
+        
+        // 1. Inviamo prima i 4 byte che indicano la dimensione
+        send(socket_fd, &dimensione_pacchetto, sizeof(dimensione_pacchetto), 0);
+        
+        // 2. Inviamo subito dopo il vero pacchetto Protobuf
         send(socket_fd, dati_serializzati.c_str(), dati_serializzati.size(), 0);
     }
 }

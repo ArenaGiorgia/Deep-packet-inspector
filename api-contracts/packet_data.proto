@@ -7,11 +7,26 @@ option go_package = "./router;router";
 
 // La struttura esatta del pacchetto che i tre linguaggi si scambieranno
 message NetworkPacket {
+
+    // CAMPI DI RETE (Decodificati e riempiti dal modulo Go)
     string source_ip = 1;
     string dest_ip = 2;
     int32 source_port = 3;
     int32 dest_port = 4;
-    string protocol = 5;      // Es: "TCP", "UDP"
-    bytes raw_payload = 6;    // I dati veri e propri (dove cercheremo le password)
-    int64 timestamp_ms = 7;   // Timestamp per calcolare le latenze
+    string protocol = 5;  // Es: "TCP", "UDP"
+    
+    // PAYLOAD DATI
+    // Fase 1 (C++): Contiene l'intero frame Ethernet grezzo
+    // Fase 2 (Go): Viene sovrascritto lasciando solo il testo (Livello 7)
+    // --------------------------------------------------------
+    bytes raw_payload = 6;    
+
+    // Timestamp iniettato in C++ (Hardware) per calcolare la latenza end-to-end
+    int64 timestamp_ms = 7;   
+    
+    // --------------------------------------------------------
+    // NOVITÀ: GESTIONE SESSIONI TCP (Per il modulo Python)
+    // --------------------------------------------------------
+    uint32 seq_num = 8;       // Sequence Number TCP per riordinare i pacchetti
+    uint32 tcp_flags = 9;     // Flag grezzi del TCP (FIN, SYN, RST...) estratti da Go per l'analisi in Python
 }

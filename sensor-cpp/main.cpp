@@ -17,13 +17,14 @@ std::atomic<bool> sistema_attivo(true);
 
 // Funzione richiamata automaticamente dal sistema operativo se premi Ctrl+C
 void gestore_segnali(int segnale) {
-    std::cout << "Ricevuto segnale di stop (Ctrl+C). Avvio dello spegnimento pulito...\n";
+    std::cout << "\nRicevuto segnale di stop (Ctrl+C o spegnimento Docker). Avvio dello spegnimento pulito...\n";
     sistema_attivo = false;
 }
 
 int main() {
-    //Registriamo il gestore del segnale SIGINT (Ctrl+C)
+    //Registriamo il gestore del segnale SIGINT (Ctrl+C) e SIGTERM (Docker)
     std::signal(SIGINT, gestore_segnali);
+    std::signal(SIGTERM, gestore_segnali);
 
     std::cout << "Avvio di PACKET INSPECTION (C++) : \n";
 
@@ -36,7 +37,8 @@ int main() {
     CatturaTraffico producer(coda_condivisa, interfaccia_rete);
 
     //Creazione del Consumer (Spedisce i pacchetti Protobuf al microservizio Go)
-    std::string indirizzo_IP_Go = "127.0.0.1";
+    // Sfruttiamo il DNS di Docker: invece di 127.0.0.1, usiamo il nome del container "router"
+    std::string indirizzo_IP_Go = "router"; 
     int porta_Go = 8080;
     InoltroTraffico consumer(coda_condivisa, indirizzo_IP_Go, porta_Go);
 

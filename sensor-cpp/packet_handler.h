@@ -1,5 +1,5 @@
 //definisco nel file .h la classe con i metodi che andrò a richiamare nel file packet_handler.cpp
-#pragma once  //direttiva moderna che impedisce al compilatore di includere file header .h due volte per errore
+#pragma once  //impedisce al compilatore di includere file header .h due volte per errore
 #include <queue> //per gestire le code (push,pop,empty,front)
 #include <mutex>  //per gestire i thread (lock_guard, unique_lock )
 #include <condition_variable> //meccanismo avanzato dei thread (wait, notify_one,notify_all)
