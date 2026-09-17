@@ -1,66 +1,99 @@
-// ==========================================
 // LOGICA WEBSOCKET FRONTEND 
-// ==========================================
 
 const statusBadge = document.getElementById('status-badge');
+const rawContainer = document.getElementById('raw-container');
 const alertsContainer = document.getElementById('alerts-container');
 
-// 1. Inizializziamo la connessione al nostro router Go sulla porta 8081
-const ws = new WebSocket("ws://127.0.0.1:8081/ws");
+// Elementi dei contatori (KPI)
+const kpiTotal = document.getElementById('kpi-total');
+const kpiThreats = document.getElementById('kpi-threats');
+const kpiLatency = document.getElementById('kpi-latency');
 
-// 2. Evento: Connessione stabilita con successo
-ws.onopen = function () {
-    statusBadge.textContent = "● LIVE SECURE CONNECTION";
-    statusBadge.classList.add("status-connected");
-    statusBadge.classList.remove("status-disconnected");
-};
+// Variabili di stato interne
+let totalPackets = 0;
+let totalThreats = 0;
 
-// 3. Evento: Connessione persa o chiusa
-ws.onclose = function () {
-    statusBadge.textContent = "● DISCONNESSO";
-    statusBadge.classList.add("status-disconnected");
-    statusBadge.classList.remove("status-connected");
-};
+// URL dinamico: si connette sempre all'IP giusto su cui navighi
+const wsUrl = `ws://${location.hostname}:8081/ws`;
+let ws;
 
-// 4. Evento: Ricezione di un pacchetto dal backend Go
-ws.onmessage = function (event) {
-    const rawMessage = event.data;
-    aggiungiAllarme(rawMessage);
-};
+function connect() {
+    ws = new WebSocket(wsUrl);
 
-// Funzione di utilità per creare e mostrare l'allarme nella UI
-function aggiungiAllarme(testo) {
+    ws.onopen = function () {
+        statusBadge.textContent = "● LIVE SECURE CONNECTION";
+        statusBadge.classList.add("status-connected");
+        statusBadge.classList.remove("status-disconnected");
+    };
+
+    ws.onclose = function () {
+        statusBadge.textContent = "● DISCONNESSO";
+        statusBadge.classList.add("status-disconnected");
+        statusBadge.classList.remove("status-connected");
+        // Tenta di riconnettersi in automatico dopo 3 secondi
+        setTimeout(connect, 3000);
+    };
+
+    ws.onmessage = function (event) {
+        const rawMessage = event.data;
+        processMessage(rawMessage);
+    };
+}
+
+function processMessage(testo) {
+    //  Aggiorniamo sempre il traffico totale analizzato
+    totalPackets++;
+    kpiTotal.textContent = totalPackets;
+
+    //  Capiamo di che tipo di pacchetto si tratta
+    const isThreat = testo.includes("🚨") || testo.includes("MINACCIA");
+
     const card = document.createElement('div');
     card.className = 'alert-card';
 
-    // ==========================================
-    // EFFETTO WOW: Controllo e cambio stile dinamico
-    // ==========================================
-    // Se il messaggio contiene la sirena o la parola MINACCIA, attiviamo l'allarme rosso!
-    if (testo.includes("🚨") || testo.includes("MINACCIA")) {
+    if (isThreat) {
+        // Aggiorna contatore minacce
+        totalThreats++;
+        kpiThreats.textContent = totalThreats;
         card.classList.add('threat-card');
+
+        //  Estraiamo il numero esatto della latenza dal testo usando una RegEx!
+        const latencyMatch = testo.match(/Latenza:\s*([0-9.]+)\s*ms/);
+        if (latencyMatch && latencyMatch[1]) {
+            kpiLatency.textContent = latencyMatch[1] + " ms";
+            // Effetto flash sul testo per far notare l'aggiornamento
+            kpiLatency.style.color = "#ef4444";
+            setTimeout(() => kpiLatency.style.color = "", 300);
+        }
     }
 
     const timeSpan = document.createElement('span');
     timeSpan.className = 'alert-time';
     const now = new Date();
-    // Formattazione timestamp ad alta precisione
     timeSpan.textContent = now.toLocaleTimeString() + "." + now.getMilliseconds().toString().padStart(3, '0');
 
     const messageSpan = document.createElement('span');
     messageSpan.className = 'alert-message';
-    // Protezione automatica XSS inserendo come textContent e non come innerHTML
     messageSpan.textContent = testo;
 
     card.appendChild(timeSpan);
     card.appendChild(messageSpan);
 
-    // Inserisce il nuovo allarme in cima alla lista
-    alertsContainer.prepend(card);
-
-    // Ottimizzazione memoria (Garbage Collection friendly): 
-    // manteniamo solo gli ultimi 50 allarmi nel browser
-    if (alertsContainer.children.length > 50) {
-        alertsContainer.removeChild(alertsContainer.lastChild);
+    //  SMISTAMENTO SPLIT-SCREEN
+    if (isThreat) {
+        // Le minacce vanno nella colonna di Destra (Ne teniamo massimo 50 a video)
+        alertsContainer.prepend(card);
+        if (alertsContainer.children.length > 50) {
+            alertsContainer.removeChild(alertsContainer.lastChild);
+        }
+    } else {
+        // Il traffico grezzo va nella colonna di Sinistra (Ne teniamo massimo 100 a video)
+        rawContainer.prepend(card);
+        if (rawContainer.children.length > 100) {
+            rawContainer.removeChild(rawContainer.lastChild);
+        }
     }
 }
+
+// Avvio della connessione all'apertura della pagina
+connect();

@@ -4,21 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DPI Security Dashboard</title>
-    <!-- Caricamento disaccoppiato dello stile -->
     <link rel="stylesheet" href="style.css">
-    <!-- Caricamento asincrono e differito della logica JS -->
     <script src="app.js" defer></script>
 </head>
 <body>
 
     <header>
-        <h1>🛡️ DPI Analizzatore Forense</h1>
-        <div id="status-badge">Connessione in corso...</div>
+        <div class="header-top">
+            <h1>🛡️ DPI Analizzatore Forense</h1>
+            <div id="status-badge">Connessione in corso...</div>
+        </div>
+        
+        <!-- Pannello Telemetria -->
+        <div class="kpi-container">
+            <div class="kpi-box">
+                <span class="kpi-label">Traffico Analizzato</span>
+                <span class="kpi-value" id="kpi-total">0</span>
+            </div>
+            <div class="kpi-box threat-box">
+                <span class="kpi-label">Minacce Bloccate</span>
+                <span class="kpi-value" id="kpi-threats">0</span>
+            </div>
+            <div class="kpi-box">
+                <span class="kpi-label">Ultima Latenza DPI</span>
+                <span class="kpi-value" id="kpi-latency">0 ms</span>
+            </div>
+        </div>
     </header>
 
-    <div id="alerts-container">
-        <!-- Gli allarmi compariranno qui dinamicamente iniettati dal JS -->
-    </div>
+    <!--  Split Screen -->
+    <main class="split-screen">
+        <!-- Colonna 1: Tutto il traffico -->
+        <section class="feed-column">
+            <h2>🌊 Flusso di Traffico Grezzo (Livello 4)</h2>
+            <div id="raw-container" class="scroll-container"></div>
+        </section>
+        
+        <!--  Solo gli allarmi -->
+        <section class="feed-column">
+            <h2>🚨 Intelligence sulle Minacce (Livello 7)</h2>
+            <div id="alerts-container" class="scroll-container"></div>
+        </section>
+    </main>
 
 </body>
 </html>
