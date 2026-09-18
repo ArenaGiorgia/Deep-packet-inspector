@@ -12,6 +12,9 @@ private:
     di tipo NetworkPacket (la classe generata dal tuo file .proto) */
     std::queue<std::unique_ptr<packet_inspector::NetworkPacket>> coda;
     
+    // Limite 10 mila pacchetti per prevenire memory leak se il consumer si ferma 
+    const size_t capacita_massima = 10000;
+
     //Semafori per evitare che due thread accedano alla coda contemporaneamente
     std::mutex mutex;
     

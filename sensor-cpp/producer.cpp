@@ -45,6 +45,7 @@ void CatturaTraffico::avvia() {
     std::string regola_filtro = "not port 8080 and not port 8081 and not port 9001 and not port 9002";
     if (pcap_compile(sessione, &filtro, regola_filtro.c_str(), 0, PCAP_NETMASK_UNKNOWN) != -1) {
         pcap_setfilter(sessione, &filtro);
+        pcap_freecode(&filtro); // libera la memoria della struttura compilata dal filtro
     } else {
         std::cerr << "Impossibile compilare il filtro BPF.\n";
     }

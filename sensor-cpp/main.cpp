@@ -25,7 +25,12 @@ int main() {
     //Registriamo il gestore del segnale SIGINT (Ctrl+C) e SIGTERM (Docker)
     std::signal(SIGINT, gestore_segnali);
     std::signal(SIGTERM, gestore_segnali);
-
+    
+    /*Quando il microservizio Go chiude la connessione (crash, restart, riavvio del container) e tu 
+    continui a chiamare send() su quel socket, Linux per default invia il segnale SIGPIPE al processo, 
+    che termina il programma immediatamente*/
+    std::signal(SIGPIPE, SIG_IGN); //ignoriamo SIGPIPE, gestiamo noi l'errore via valore di ritorno di send()
+    
     std::cout << "Avvio di del packet inspector di C++ : \n";
 
     //Creazione della Coda condivisa

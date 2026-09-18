@@ -43,6 +43,9 @@ private:
     //Tenta di instaurare la connessione TCP con Go
     bool connetti_socket();
 
+    //invia tutti i byte richiesti, controllando che l'invio vada a buon fine
+    bool invia_tutto(const char* dati, int lunghezza);
+
 public:
     // Costruttore: chiede la coda condivisa e le coordinate di destinazione (IP e porta)
     InoltroTraffico(CodaPacchetti& coda_condivisa, const std::string& ip_destinazione, int porta_destinazione);
