@@ -1,18 +1,21 @@
-/*AvviaSmistatorePacchetti è la Goroutine "Worker".
+/*
+AvviaSmistatorePacchetti è la Goroutine "Worker".
 Nel main.go ne lanceremo 5 in parallelo creando un vero "Worker Pool" per scalare su più core della CPU.
 Il simbolo <- chan indica un Canale di sola lettura (Receive-only Channel), garantendo
 che questa funzione prelevi i dati in sicurezza senza poterli alterare accidentalmente prima del tempo.
 Invece di appesantire il C++ con il parsing, qui applichiamo il pattern "Thin Sensor".
 Il C++ ci inietta i byte grezzi catturati dalla scheda di rete.
 Sarà Go, a spacchettare il livello Datalink (Ethernet),
-Network (IPv4) e Transport (TCP) estraendo solo ciò che è importante per l'analisi forense in Python.*/
+Network (IPv4) e Transport (TCP) estraendo solo ciò che è importante per l'analisi forense in Python.
+*/
 package main
 
 import (
+	"dpi/router/router"
 	"encoding/binary"
 	"fmt"
 	"net"
-	"dpi/router/router"
+
 	"google.golang.org/protobuf/proto"
 )
 
@@ -21,7 +24,7 @@ func AvviaSmistatorePacchetti(packetChannel <-chan *router.NetworkPacket, hub *W
 
 	// Il for-range sul canale si blocca finché non arrivano nuovi pacchetti
 	for rawPacket := range packetChannel {
-		
+
 		frameRete := rawPacket.RawPayload
 
 		// Un pacchetto minimo Ethernet (14 byte) + IPv4 (20 byte) è di 34 byte.
@@ -50,7 +53,7 @@ func AvviaSmistatorePacchetti(packetChannel <-chan *router.NetworkPacket, hub *W
 			
 			// Verifica di sicurezza: l'header TCP minimo è di 20 byte
 			if len(frameRete) < inizioTCP+20 {
-				continue 
+				continue
 			}
 
 			// Estraiamo le porte leggendo blocchi di 2 byte (Uint16)
@@ -84,7 +87,7 @@ func AvviaSmistatorePacchetti(packetChannel <-chan *router.NetworkPacket, hub *W
 			rawPacket.Protocol = "TCP"
 			rawPacket.SeqNum = numeroSequenza
 			rawPacket.TcpFlags = uint32(flagTCP)
-			rawPacket.RawPayload = datiTCP 
+			rawPacket.RawPayload = datiTCP
 
 			// Serializziamo in formato binario ultraleggero per Python
 			datiSerializzati, err := proto.Marshal(rawPacket)

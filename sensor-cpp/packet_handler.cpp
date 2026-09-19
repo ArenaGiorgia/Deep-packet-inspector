@@ -17,6 +17,12 @@ void CodaPacchetti::push(std::unique_ptr<packet_inspector::NetworkPacket> pacche
    Quando la funzione finisce, l'oggetto blocco viene distrutto automaticamente dal C++ e il semaforo 
    torna verde.*/
 
+   //La coda è piena perche consumer lento o disconnesso 
+   if (coda.size() >= capacita_massima) { 
+    //buttiamo via il pacchetto più vecchio in testa alla coda per privelegiare i dati recenti. 
+    coda.pop();  //grazie agli smart pointer viene invocato il distruttore del pacchetto quando si fa la pop e libera memoria    
+    }
+
     //Spostiamo il pacchetto dentro la nostra coda (Non stiamo facendo una copia del pacchetto in memoria)
     coda.push(std::move(pacchetto));
     

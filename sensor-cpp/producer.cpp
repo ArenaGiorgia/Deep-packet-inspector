@@ -17,7 +17,7 @@ CatturaTraffico::~CatturaTraffico() {
 }
 
 bool CatturaTraffico::blocco_sicuro() {
-    // Il lock_guard blocca automaticamente il mutex e lo sblocca quando la funzione finisce (RAII)
+    // Il lock_guard blocca automaticamente il mutex e lo sblocca quando la funzione finisce
     std::lock_guard<std::mutex> lock(mutex_stato);
     return attivo;
 }
@@ -37,14 +37,14 @@ void CatturaTraffico::avvia() {
     }
 
     
-    // FIX FONDAMENTALE: FILTRO BPF (BERKELEY PACKET FILTER)
+    //filtro BPF(Berkeley Packet Filter)
     // Escludiamo il traffico interno (porte dei container Go e Python) per evitare "l'effetto eco".
-    // Catturiamo tutto il resto, così il generatore Python (che ora punta alla porta 9999)
-    // verrà intercettato correttamente!
+    // Catturiamo tutto il resto, così il generatore Python che punta alla porta 9999 verrà intercettato correttamente!
     struct bpf_program filtro;
     std::string regola_filtro = "not port 8080 and not port 8081 and not port 9001 and not port 9002";
     if (pcap_compile(sessione, &filtro, regola_filtro.c_str(), 0, PCAP_NETMASK_UNKNOWN) != -1) {
         pcap_setfilter(sessione, &filtro);
+        pcap_freecode(&filtro); // libera la memoria della struttura compilata dal filtro
     } else {
         std::cerr << "Impossibile compilare il filtro BPF.\n";
     }
@@ -89,7 +89,7 @@ void CatturaTraffico::cattura() {
     struct pcap_pkthdr* intestazione_pcap; 
     const u_char* byte_grezzi;             
 
-    // Usiamo la funzione sicura col Mutex per evitare Data Race!
+    // Usiamo la funzione sicura col Mutex per evitare Data Race
     while (blocco_sicuro()) {
         int risultato = pcap_next_ex(sessione, &intestazione_pcap, &byte_grezzi);
 

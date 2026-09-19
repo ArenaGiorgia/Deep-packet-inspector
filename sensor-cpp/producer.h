@@ -12,7 +12,7 @@ private:
     // Lavoreremo fisicamente sulla stessa identica coda usata dal resto del programma.
     CodaPacchetti& coda;  // usiamo il reference & per lavorare NON sulla copia della coda
     
-    // Conterrà il nome della scheda da cui copiare i dati (es. "eth0" o "wlan0")
+    // Conterrà il nome della scheda da cui copiare i dati come "eth0
     std::string interfaccia;
     
     // Questo è un puntatore speciale fornito dalla libreria pcap. 
@@ -27,8 +27,7 @@ private:
     /* 
     Dato che il programma principale (che preme lo stop) e il thread producer (che gira in background) 
     lavorano in parallelo, potrebbero provare a leggere e modificare questa variabile nello stesso 
-    identico millisecondo. Questo in C++ si chiama Data Race e fa crashare l'applicazione. 
-    Usiamo un lock_guard ogni singola volta che vogliamo leggere o scrivere il valore della variabile 
+    identico millisecondo. Usiamo un lock_guard ogni singola volta che vogliamo leggere o scrivere il valore della variabile 
     tramite la funzione is_attivo(). 
    */ 
 

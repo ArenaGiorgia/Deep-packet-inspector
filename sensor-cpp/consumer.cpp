@@ -11,6 +11,7 @@ Legge gli header di base (IP e porte), popola la struttura Protobuf, serializza 
 #include <cstring>      // Per gestire la memoria (memset, memcpy)
 #include <chrono>       // Per misurare i tempi di attesa (sleep)
 #include <thread>       // Per mettere in pausa il thread durante i tentativi di connessione
+#include <csignal>      //per la gestione del segnale SIGPIPE
 
 //costruttore 
 InoltroTraffico::InoltroTraffico(CodaPacchetti& coda_condivisa, const std::string& ip_destinazione, int porta_destinazione)
@@ -47,9 +48,8 @@ bool InoltroTraffico::connetti_socket() {
     // htons serve a convertire il numero della porta nel formato leggibile dalla rete (Network Byte Order)
     indirizzo_server.sin_port = htons(porta);
     
-    // ==========================================
+    
     // LOGICA DI RISOLUZIONE IBRIDA (IP numerico o Nome DNS)
-    // ==========================================
     if (inet_pton(AF_INET, indirizzo_ip.c_str(), &indirizzo_server.sin_addr) <= 0) {
         // Se non è un IP numerico (es. "127.0.0.1"), proviamo a risolverlo come nome di container
         struct hostent* host = gethostbyname(indirizzo_ip.c_str());
@@ -61,7 +61,7 @@ bool InoltroTraffico::connetti_socket() {
         // Copiamo l'indirizzo IP binario tradotto
         memcpy(&indirizzo_server.sin_addr.s_addr, host->h_addr_list[0], host->h_length);
     }
-    // ==========================================
+    
 
     //Facciamo partire la "chiamata" verso Go
     int risultato_connessione = connect(socket_fd, (struct sockaddr*)&indirizzo_server, sizeof(indirizzo_server));
@@ -108,7 +108,6 @@ void InoltroTraffico::ferma() {
     {
         // Acquisiamo il lucchetto prima di spegnere
         std::lock_guard<std::mutex> blocco(mutex_stato);
-        if (!attivo) return;
         attivo = false;
     }
 
@@ -122,6 +121,31 @@ void InoltroTraffico::ferma() {
         close(socket_fd);
         socket_fd = -1;
     }
+}
+
+bool InoltroTraffico::invia_tutto(const char* dati, int lunghezza) {
+    
+    int byte_inviati = 0; // quanti byte abbiamo già spedito
+
+    // Continuiamo finché non abbiamo inviato tutti i byte richiesti
+    while (byte_inviati < lunghezza) {
+
+        // Proviamo a inviare il pezzo di dati che manca
+        int risultato = send(socket_fd, dati + byte_inviati, lunghezza - byte_inviati, MSG_NOSIGNAL);
+        //Linux per default invia il segnale SIGPIPE al processo, che termina il programma immediatamente
+        //usiamo MSG_NOSIGNAL per gestire il segnale SIGPIPE e ignorarlo
+
+        // Se send() restituisce un numero <= 0, la connessione è caduta
+        if (risultato <= 0) {
+            std::cerr << "Errore: invio fallito, connessione con Go probabilmente caduta.\n";
+            return false; // usciamo 
+        }
+
+        // Aggiorniamo il conteggio di quanto abbiamo inviato finora
+        byte_inviati = byte_inviati + risultato;
+    }
+
+    return true; // tutto inviato correttamente
 }
 
 
@@ -142,17 +166,26 @@ void InoltroTraffico::ciclo_di_invio() {
         std::string dati_serializzati;
         pacchetto_ricevuto->SerializeToString(&dati_serializzati);
 
-        // ==========================================
-        // FIX ARCHITETTURALE: TCP FRAMING (Length-Prefix)
-        // ==========================================
+
         // Diciamo a Go la dimensione esatta del pacchetto prima di inviarlo.
         // htonl() converte l'intero a 32 bit nel Network Byte Order (Big Endian)
         uint32_t dimensione_pacchetto = htonl(dati_serializzati.size());
         
-        // 1. Inviamo prima i 4 byte che indicano la dimensione
-        send(socket_fd, &dimensione_pacchetto, sizeof(dimensione_pacchetto), 0);
-        
-        // 2. Inviamo subito dopo il vero pacchetto Protobuf
-        send(socket_fd, dati_serializzati.c_str(), dati_serializzati.size(), 0);
+        // Prima inviamo la dimensione del pacchetto (4 byte)
+        bool primo_check = invia_tutto((const char*) &dimensione_pacchetto, sizeof(dimensione_pacchetto));
+
+        // Se il primo invio è andato bene, inviamo il pacchetto vero e proprio
+        bool secondo_check = false;
+        if (primo_check) {
+            secondo_check = invia_tutto(dati_serializzati.c_str(), dati_serializzati.size());
+        }
+
+        // Se uno dei due invii è fallito, ci fermiamo
+        if (!primo_check || !secondo_check) {
+            std::lock_guard<std::mutex> blocco(mutex_stato);
+            attivo = false;
+            break;
+        }
+       
     }
 }
