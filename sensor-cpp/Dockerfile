@@ -1,11 +1,8 @@
-# ==========================================
-# FASE 1: BUILDER (Ambiente di compilazione)
-# ==========================================
 FROM ubuntu:22.04 AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Installiamo i compilatori (rimosso git che era superfluo)
+#Installiamo i compilatori
 RUN apt-get update && apt-get install -y \
     build-essential \
     cmake \
@@ -15,31 +12,29 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copiamo i sorgenti
+#copiamo i sorgenti
 COPY sensor-cpp/ /app/
 COPY api-contracts/packet_data.proto /app/
 
-# Compiliamo Protobuf e il progetto C++
+#compiliamo Protobuf e il progetto C++
 RUN protoc --cpp_out=. packet_data.proto
 RUN mkdir -p build && cd build && cmake .. && make
 
-# ==========================================
-# FASE 2: RUNTIME (Immagine di produzione leggera)
-# ==========================================
+#scarichiamo le immagini
 FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Installiamo SOLO le librerie necessarie per far girare l'eseguibile, NIENTE compilatori!
+#installiamo solo le librerie necessarie per far girare l'eseguibile
 RUN apt-get update && apt-get install -y \
     libpcap0.8 \
-    libprotobuf-dev \
+    libprotobuf23 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copiamo SOLO l'eseguibile generato dalla Fase 1
+#copiamo solo l'eseguibile
 COPY --from=builder /app/build/sensor /app/sensor
 
-# Eseguiamo il sensore
+#eseguiamo il sensore
 CMD ["./sensor"]

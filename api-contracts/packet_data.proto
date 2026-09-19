@@ -4,7 +4,7 @@ option go_package = "./router;router";
 
 message NetworkPacket {
 
-    //campi riempiti dal modulo Go)
+    //campi riempiti dal modulo Go
     string source_ip = 1;
     string dest_ip = 2;
     int32 source_port = 3;

@@ -23,7 +23,7 @@ const (
 
 type NetworkPacket struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	//campi riempiti dal modulo Go)
+	//campi riempiti dal modulo Go
 	SourceIp      string `protobuf:"bytes,1,opt,name=source_ip,json=sourceIp,proto3" json:"source_ip,omitempty"`
 	DestIp        string `protobuf:"bytes,2,opt,name=dest_ip,json=destIp,proto3" json:"dest_ip,omitempty"`
 	SourcePort    int32  `protobuf:"varint,3,opt,name=source_port,json=sourcePort,proto3" json:"source_port,omitempty"`

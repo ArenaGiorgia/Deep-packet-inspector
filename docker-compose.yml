@@ -30,7 +30,8 @@ services:
     build: 
       context: . 
       dockerfile: sensor-cpp/Dockerfile
-    
+    env_file:
+      - .env
     network_mode: "service:router"
     cap_add:
       - NET_ADMIN
