@@ -12,10 +12,14 @@
     <header>
         <div class="header-top">
             <h1>🛡️ DPI Analizzatore Forense</h1>
-            <div id="status-badge">Connessione in corso...</div>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <!-- Pulsante Freeze per bloccare lo scorrimento visivo durante l'esame -->
+                <button id="freeze-btn" class="btn-freeze">⏸️ PAUSA FLUSSO</button>
+                <div id="status-badge">Connessione in corso...</div>
+            </div>
         </div>
         
-        <!-- Pannello Telemetria -->
+        <!-- Pannello Telemetria (I contatori continuano ad aggiornarsi anche in pausa) -->
         <div class="kpi-container">
             <div class="kpi-box">
                 <span class="kpi-label">Traffico Analizzato</span>
@@ -32,20 +36,23 @@
         </div>
     </header>
 
-    <!--  Split Screen -->
+    <!-- Split Screen: Layout strutturato a due colonne -->
     <main class="split-screen">
-        <!-- Colonna 1: Tutto il traffico -->
+        <!-- Colonna 1: Tutto il traffico TCP Grezzo -->
         <section class="feed-column">
-            <h2>🌊 Flusso di Traffico Grezzo (Livello 4)</h2>
+            <h2>ANALISI FLUSSO TCP (LIV. 4)</h2>
             <div id="raw-container" class="scroll-container"></div>
         </section>
         
-        <!--  Solo gli allarmi -->
+        <!-- Colonna 2: Solo gli allarmi DPI isolati -->
         <section class="feed-column">
-            <h2>🚨 Intelligence sulle Minacce (Livello 7)</h2>
+            <h2>RILEVAMENTO MINACCE DPI (LIV. 7)</h2>
             <div id="alerts-container" class="scroll-container"></div>
         </section>
     </main>
+
+    <!-- Effetto Monitor CRT: Linee di scansione in sovrimpressione -->
+    <div class="scanlines"></div>
 
 </body>
 </html>

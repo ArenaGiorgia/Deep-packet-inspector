@@ -1,5 +1,5 @@
 import collections
-from typing import Dict, Tuple
+from typing import Dict, Optional
 
 
 class RiassemblatoreTCP:
@@ -16,10 +16,12 @@ class RiassemblatoreTCP:
 
     def aggiungi_segmento(
         self, id_sessione: str, payload: bytes, seq_num: int, flag_tcp: int
-    ) -> bytes:
+    ) -> Optional[bytes]:
         """
-        Aggiunge un segmento alla coda di sessione, lo riordina tramite Sequence Number
-        e restituisce il flusso contiguo ricostruito.
+        Aggiunge un segmento alla coda di sessione.
+        Per ottimizzare le prestazioni (da O(n^2 log n) a O(n log n)) e prevenire
+        allarmi duplicati sui frammenti, riordina e restituisce il flusso contiguo ricostruito
+        SOLO alla chiusura della connessione TCP.
         """
         # Se la sessione è nuova, inizializziamo la doppia coda
         # Utilizziamo deque in base alle linee guida di ottimizzazione per le code performanti.
@@ -30,25 +32,34 @@ class RiassemblatoreTCP:
         # Le tuple sono ideali qui per garantire l'immutabilità della coppia (SeqNum, Dati).
         self._buffer_sessioni[id_sessione].append((seq_num, payload))
 
-        # Ordinamento dinamico in base al Sequence Number (il primo elemento della tupla: x[0]).
-        # Questo garantisce che i pacchetti arrivati fuori ordine vengano riallineati correttamente
-        # prima di essere passati all'analizzatore Regex.
-        coda_ordinata = sorted(self._buffer_sessioni[id_sessione], key=lambda x: x[0])
-
-        # Riassemblaggio del payload completo
-        payload_completo = bytearray()
-        for _, dati in coda_ordinata:
-            payload_completo.extend(dati)
-
         # GESTIONE CICLO DI VITA TCP (FIN / RST)
         # I flag TCP sono contenuti in un singolo byte.
         # Il flag FIN (Fine connessione normale) corrisponde al bit 0 (valore 1).
         # Il flag RST (Reset connessione anomalo) corrisponde al bit 2 (valore 4).
         # Usiamo l'operatore bit a bit AND (&) per mascherare ed estrarre i flag rilevanti.
         if (flag_tcp & 0x01) != 0 or (flag_tcp & 0x04) != 0:
+
+            # Ordinamento dinamico in base al Sequence Number (il primo elemento della tupla: x[0]).
+            # Effettuiamo l'ordinamento costoso UNA SOLA VOLTA a fine sessione.
+            # Questo garantisce che i pacchetti arrivati fuori ordine vengano riallineati correttamente
+            # prima di essere passati all'analizzatore Regex.
+            coda_ordinata = sorted(
+                self._buffer_sessioni[id_sessione], key=lambda x: x[0]
+            )
+
+            # Riassemblaggio del payload completo
+            payload_completo = bytearray()
+            for _, dati in coda_ordinata:
+                payload_completo.extend(dati)
+
+            # Svuotiamo la memoria a fine sessione per evitare memory leak
             self.pulisci_sessione(id_sessione)
 
-        return bytes(payload_completo)
+            return bytes(payload_completo)
+
+        # La sessione è ancora in corso. Restituiamo None per indicare all'analizzatore
+        # di non ispezionare prematuramente un frammento parziale.
+        return None
 
     def pulisci_sessione(self, id_sessione: str) -> None:
         """Pulisce la memoria eliminando i dati quando la connessione TCP viene chiusa."""

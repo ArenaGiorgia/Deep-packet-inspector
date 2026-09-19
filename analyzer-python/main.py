@@ -1,5 +1,6 @@
 import socket
 import logging
+import signal
 from google.protobuf.message import DecodeError
 import packet_data_pb2
 from inspector import AnalizzatoreDPI
@@ -41,6 +42,7 @@ class AnalizzatoreLogico:
 
     def avvia_server(self) -> None:
         """Avvia il ciclo di ascolto infinito (Acceptor Loop) UDP."""
+
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind((self.host, self.listen_port))
 
@@ -52,8 +54,9 @@ class AnalizzatoreLogico:
             while True:
                 buffer, addr = sock.recvfrom(self.buffer_size)
                 packet = packet_data_pb2.NetworkPacket()
+
                 # PARADIGMA EAFP (Easier to Ask Forgiveness than Permission)
-                # Invece di controllare i tipi o la lunghezza del bytearray prima ,
+                # Invece di controllare i tipi o la lunghezza del bytearray prima,
                 # tentiamo direttamente la deserializzazione e intercettiamo l'errore.
                 try:
                     packet.ParseFromString(buffer)
@@ -90,16 +93,38 @@ class AnalizzatoreLogico:
                     alert_sock.sendto(testo_allarme.encode("utf-8"), self.alert_address)
 
         except KeyboardInterrupt:
-            print("\n[SEGNALE] Spegnimento analizzatore richiesto dall'utente.")
+            # Questo blocco viene ora innescato sia premendo Ctrl+C nel terminale,
+            # sia quando Docker decide di spegnere i container (SIGTERM).
+            print(
+                "\n[SEGNALE] Spegnimento analizzatore richiesto dall'utente o da Docker (SIGTERM)."
+            )
 
         finally:
             # GRACEFUL SHUTDOWN (Cleanup)
+            # Garantiamo il rilascio sicuro delle porte UDP a livello di sistema operativo.
             print("[CLEANUP] Chiusura sicura dei socket completata.")
             sock.close()
             alert_sock.close()
 
 
+# GESTIONE SEGNALI OS (Docker Graceful Shutdown)
+def _gestisci_sigterm(segnale, frame):
+    """
+    Intercetta il segnale SIGTERM (es. 'docker stop').
+    Sfruttando la PEP 475, sollevare intenzionalmente un'eccezione (KeyboardInterrupt)
+    interrompe immediatamente le system call bloccanti (come sock.recvfrom() nel while),
+    impedendo al kernel di ritentare l'operazione. Questo sblocca il server istantaneamente
+    e forza l'esecuzione del blocco 'finally' per una pulizia impeccabile delle risorse.
+    """
+    raise KeyboardInterrupt
+
+
 # Blocco di protezione per evitare esecuzioni accidentali in caso di importazione
 if __name__ == "__main__":
+    # Registriamo l'handler nel Main Thread prima di avviare qualsiasi logica di business.
+    # Questo garantisce coerenza architetturale con i moduli C++ e Go e previene
+    # errori (ValueError) legati all'impostazione di segnali al di fuori del thread principale.
+    signal.signal(signal.SIGTERM, _gestisci_sigterm)
+
     analizzatore = AnalizzatoreLogico()
     analizzatore.avvia_server()

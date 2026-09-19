@@ -1,3 +1,4 @@
 # Libreria ufficiale di Google per la decodifica dei Protocol Buffers
-protobuf==4.25.3
+# Fissata a >= 5.26.0 per compatibilità con gencode 7.36.1 e runtime_version
+protobuf>=5.26.0
 websockets==12.0

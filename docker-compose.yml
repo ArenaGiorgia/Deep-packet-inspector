@@ -1,10 +1,9 @@
-# Creiamo una rete virtuale interna dedicata al nostro sistema
 networks:
   dpi_network:
     driver: bridge
 
 services:
-  # 1. Il Livello di Analisi (Python)
+  # 1. Il Livello di Analisi Forense (Python)
   analyzer:
     build:
       context: .
@@ -14,14 +13,14 @@ services:
     ports:
       - "9001:9001/udp"
 
-  # 2. Il Gateway/Router (Go)
+  # 2. Il Gateway/Router Concorrente (Go)
   router:
     build: ./router-go
     networks:
       - dpi_network
     ports:
-      - "8080:8080"  # Porta per ricevere i dati dal Sensore
-      - "8081:8081"  # Porta per servire la Dashboard Web
+      - "8080:8080"  # Porta per ricevere gli stream dal Sensore
+      - "8081:8081"  # Porta HTTP per servire la Dashboard Web
     depends_on:
       - analyzer
 
@@ -30,7 +29,7 @@ services:
     build: 
       context: . 
       dockerfile: sensor-cpp/Dockerfile
-    
+    # network_mode: "service:router" fonde lo stack di rete: il sensore può usare "localhost" per raggiungere il router
     network_mode: "service:router"
     cap_add:
       - NET_ADMIN
@@ -38,11 +37,11 @@ services:
     depends_on:
       - router
 
-  # 4. Il Generatore di Traffico (Test)
+  # 4. Il Generatore di Traffico (Simulatore per Test)
   generator:
     build: ./traffic-generator
     networks:
       - dpi_network
-    # Lo facciamo partire con qualche secondo di ritardo per dare tempo al sistema di avviarsi
+    # Ritardo di 5 secondi per garantire che Analyzer e Router siano in ascolto prima di iniettare traffico
     command: >
       /bin/sh -c "sleep 5 && python -u generator.py"

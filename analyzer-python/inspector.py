@@ -13,10 +13,17 @@ class AnalizzatoreDPI:
         # è ad uso interno (protetta) e non deve essere modificata dall'esterno.
         self._conteggio_rilevamenti: int = 0
 
-        # [OTTIMIZZAZIONE]: L'automa a stati finiti (FSM) dell'espressione regolare
-        # viene pre-compilato a tempo di inizializzazione per massimizzare il throughput
-        # durante l'ispezione dei pacchetti ad alta velocità.
-        self._pattern_credenziali = re.compile(r"(?i)(user|pass|password|login)")
+        # [OTTIMIZZAZIONE E PRECISIONE FORENSE]: L'automa a stati finiti (FSM) dell'espressione
+        # regolare viene pre-compilato a tempo di inizializzazione per massimizzare il throughput.
+        # Utilizziamo re.MULTILINE per far sì che '^' corrisponda all'inizio di ogni singola riga
+        # (fondamentale per gli header HTTP e i comandi FTP separati da \r\n).
+        # - '^user\s' e '^pass\s': Intercettano i comandi FTP esatti, ignorando falsi positivi
+        #   come l'header legittimo "User-Agent: Mozilla/5.0" (che ha il trattino e non lo spazio).
+        # - '\bpassword\b': Utilizza i Word Boundaries (\b) per intercettare le chiavi JSON
+        #   esatte (es. "password": "123") ignorando parole che la contengono (es. "passenger").
+        self._pattern_credenziali = re.compile(
+            r"(?i)(^user\s|^pass\s|\bpassword\b)", re.MULTILINE
+        )
 
     def analizza_payload(
         self, protocollo: str, payload_grezzo: bytes

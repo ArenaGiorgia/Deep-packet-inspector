@@ -44,10 +44,10 @@ class GeneratoreTraffico:
                 sock.settimeout(1.0)
                 sock.connect((self.target_ip, self.target_port))
                 sock.sendall(payload.encode("utf-8"))
-                print(f"[GENERATE] {tipo_attacco} inviato con successo.")
+                print(f"  -> {tipo_attacco} inviato con successo.")
         except ConnectionRefusedError:
             print(
-                f"[GENERATE] {tipo_attacco} creato (Rifiutato dal target, ma catturato dal C++)"
+                f"  -> {tipo_attacco} creato (Rifiutato dal target, ma catturato dal C++)"
             )
         except Exception as e:
             print(f"[ERRORE] Impossibile generare traffico: {e}")
@@ -86,6 +86,8 @@ class GeneratoreTraffico:
         print("Mischio traffico benigno (60%) e malevolo (40%).\n")
 
         for i in range(iterazioni):
+            print(f"[GENERATE] Progresso: Richiesta {i+1}/{iterazioni}")
+
             scelta = random.choices(
                 population=["legittimo", "attacco_http", "attacco_ftp"],
                 weights=[0.6, 0.20, 0.20],
@@ -99,11 +101,15 @@ class GeneratoreTraffico:
             else:
                 self.genera_attacco_ftp()
 
-            time.sleep(random.uniform(0.3, 1.5))
+            #  La Pausa di mezzo secondo (0.5).
+            # Garantisce una fluidità perfetta sulla Dashboard Web, permettendoti
+            # di parlare mentre il traffico scorre in tempo reale ("Effetto Matrix").
+            time.sleep(0.5)
 
         print("\n Simulazione completata.")
 
 
 if __name__ == "__main__":
     generatore = GeneratoreTraffico(target_ip="router", target_port=9999)
-    generatore.avvia_simulazione(iterazioni=15)
+    # Aumentato a 200 iterazioni per garantire circa 100 secondi di simulazione continua
+    generatore.avvia_simulazione(iterazioni=200)
