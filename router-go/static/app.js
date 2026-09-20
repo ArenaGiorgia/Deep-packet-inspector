@@ -18,9 +18,21 @@ let isPaused = false;
 let totalPackets = 0;
 let totalThreats = 0;
 
+// Coda per il riordino dei pacchetti e intervallo di rendering
+let pacchettiBuffer = [];
+const RENDER_INTERVAL_MS = 100; // Renderizza a schermo ogni 100 millisecondi
+
 // Configurazione WebSocket (si connette dinamicamente all'IP del server)
 const wsUrl = `ws://${location.hostname}:8081/ws`;
 let ws;
+
+// Converte Unix Microseconds in orario visivo (HH:MM:SS.µs) per la telemetria forense
+function formattaTimestampForense(unixUs) {
+    const date = new Date(unixUs / 1000); // JS lavora in millisecondi
+    const timeStr = date.toLocaleTimeString('it-IT', { hour12: false });
+    const microStr = (unixUs % 1000000).toString().padStart(6, '0');
+    return `${timeStr}.${microStr}`;
+}
 
 // ==========================================================================
 // GESTIONE EVENTI (Pulsante Pausa)
@@ -85,7 +97,7 @@ function connect() {
 }
 
 // ==========================================================================
-// PARSING INTELLIGENTE E RENDERING
+// PARSING INTELLIGENTE E BUFFERIZZAZIONE
 // ==========================================================================
 function processMessage(testo) {
     // 1. I contatori di telemetria girano SEMPRE (dimostra che il backend è vivo)
@@ -94,10 +106,10 @@ function processMessage(testo) {
 
     const isThreat = testo.includes("MINACCIA");
 
-    // 2. BLOCCO VISIVO: Se la dashboard è in pausa, non disegniamo nulla a schermo
+    // 2. BLOCCO VISIVO: Se la dashboard è in pausa, non processiamo nuovi elementi visivi
     if (isPaused) return;
 
-    // Generazione Timestamp per la UI
+    // Generazione Timestamp per la UI (Ora locale del browser)
     const now = new Date();
     const timeString = now.toLocaleTimeString() + "." + now.getMilliseconds().toString().padStart(3, '0');
 
@@ -126,7 +138,7 @@ function processMessage(testo) {
             setTimeout(() => kpiLatency.style.color = "", 300);
         }
 
-        // Creazione Card Strutturata (Stile SOC)
+        // Creazione Card Strutturata (Stile SOC) stampata immediatamente
         const card = document.createElement('div');
         card.className = 'threat-card';
         card.innerHTML = `
@@ -151,44 +163,84 @@ function processMessage(testo) {
         const payloadElement = card.querySelector('.typed-payload');
         typeWriterEffect(payloadElement, payloadDetails);
 
-        // Mantiene massimo 50 allarmi a video per non saturare la RAM del browser
+        // Mantiene massimo 50 allarmi a video per non saturare la RAM
         if (alertsContainer.children.length > 50) {
             alertsContainer.removeChild(alertsContainer.lastChild);
         }
 
     } else if (testo.includes("|")) {
         // --- GESTIONE TRAFFICO GREZZO TCP (Livello 4) ---
-        // Ora il testo è: "SYN|192.168.1.1:80|172.22.0.4:9999"
+        // Il testo ora è: "SYN|192.168.1.1:80|172.22.0.4:9999|1695208472123456|1695208472123800"
         const parts = testo.split("|");
         const flag = parts[0];
         const sourceIp = parts[1] || "Sconosciuto";
-        const destIp = parts[2] || "Sconosciuto"; // Estraiamo il destinatario!
+        const destIp = parts[2] || "Sconosciuto"; 
+        const timestampUs = parseInt(parts[3] || "0", 10); // Estraiamo i microsecondi Hardware!
+        const goTimestampUs = parseInt(parts[4] || "0", 10); // Estraiamo i microsecondi Router (Go)
 
+        // Invece di stamparlo subito, lo mettiamo nel buffer temporaneo per ordinarlo
+        pacchettiBuffer.push({
+            flag: flag,
+            sourceIp: sourceIp,
+            destIp: destIp,
+            timestampUs: timestampUs,
+            goTimestampUs: goTimestampUs, // Aggiungiamo Go al buffer
+            timeString: timeString 
+        });
+    }
+}
+
+
+
+// RENDER BUFFERIZZATO E ORDINATO (Risolve la Race Condition Visiva)
+setInterval(() => {
+    // Se la coda è vuota o il sistema è in pausa, non facciamo nulla
+    if (isPaused || pacchettiBuffer.length === 0) return;
+
+    // 1. Ordina matematicamente l'array in base ai Microsecondi dell'Hardware C++
+    // Dal pacchetto più vecchio (arriverà per primo in fondo) al più recente (in cima)
+    pacchettiBuffer.sort((a, b) => a.timestampUs - b.timestampUs);
+
+    // 2. Crea le righe nel DOM seguendo l'ordine perfetto
+    pacchettiBuffer.forEach(pkt => {
         let badgeClass = "badge-ack";
-        if (flag === "SYN") badgeClass = "badge-syn";
-        else if (flag === "FIN" || flag === "RST") badgeClass = "badge-fin";
-        else if (flag === "PSH") badgeClass = "badge-psh";
+        if (pkt.flag === "SYN") badgeClass = "badge-syn";
+        else if (pkt.flag === "FIN" || pkt.flag === "RST") badgeClass = "badge-fin";
+        else if (pkt.flag === "PSH") badgeClass = "badge-psh";
+        
+        // Formattazione esatta e assoluta per entrambi i Timestamp
+        const orarioHardware = formattaTimestampForense(pkt.timestampUs);
+        const orarioGo = formattaTimestampForense(pkt.goTimestampUs);
 
-        // Creazione riga con IP Sorgente ➔ IP Destinazione
         const riga = document.createElement('div');
         riga.className = 'raw-card';
         riga.innerHTML = `
-            <span class="alert-time">${timeString}</span>
-            <span class="badge ${badgeClass}">${flag}</span>
-            <div class="ip-flow">
-                <span class="source-ip">${sourceIp}</span>
+            <!-- FIX: white-space: nowrap impedisce di andare a capo. min-width aumentato a 260px -->
+            <div class="telemetry-info" style="min-width: 260px; margin-right: 15px; font-size: 0.75rem; color: #888; display: flex; flex-direction: column; justify-content: center; white-space: nowrap;">
+                <span style="color: #64ffda;">Timestamp C++: ${orarioHardware}</span>
+                <span>Timestamp Go:  ${orarioGo}</span>
+            </div>
+            <span class="badge ${badgeClass}">${pkt.flag}</span>
+            <div class="ip-flow" style="margin-left: 10px;">
+                <span class="source-ip">${pkt.sourceIp}</span>
                 <span class="arrow">➔</span>
-                <span class="dest-ip">${destIp}</span>
+                <span class="dest-ip">${pkt.destIp}</span>
             </div>
         `;
-
+        
+        // prepend() inserisce dall'alto.
         rawContainer.prepend(riga);
+    });
 
-        if (rawContainer.children.length > 100) {
-            rawContainer.removeChild(rawContainer.lastChild);
-        }
+    // 3. Pulisce i vecchi elementi per non saturare la RAM del browser
+    while (rawContainer.children.length > 100) {
+        rawContainer.removeChild(rawContainer.lastChild);
     }
-}
+
+    // 4. Svuota il buffer per il prossimo giro
+    pacchettiBuffer = [];
+
+}, RENDER_INTERVAL_MS);
 
 // Avvio applicazione
 connect();

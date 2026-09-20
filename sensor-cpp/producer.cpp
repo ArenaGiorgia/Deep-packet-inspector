@@ -98,9 +98,10 @@ void CatturaTraffico::cattura() {
             // Creiamo un nuovo pacchetto vuoto (FIX: aggiunto il tipo per il template!)
             auto pacchetto_nuovo = std::make_unique<packet_inspector::NetworkPacket>();
             
-            // Inseriamo il Timestamp Hardware
-            int64_t timestamp = (intestazione_pcap->ts.tv_sec * 1000LL) + (intestazione_pcap->ts.tv_usec / 1000);
-            pacchetto_nuovo->set_timestamp_ms(timestamp);
+            
+            // Inseriamo il Timestamp Hardware in microsecondi
+            int64_t timestamp = (intestazione_pcap->ts.tv_sec * 1000000LL) + intestazione_pcap->ts.tv_usec;
+            pacchetto_nuovo->set_timestamp_us(timestamp);
 
     
             // THIN SENSOR - NESSUNA DECODIFICA IP/TCP IN C++

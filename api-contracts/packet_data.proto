@@ -11,7 +11,7 @@ message NetworkPacket {
     int32 dest_port = 4;
     string protocol = 5;      // Es: "TCP", "UDP"
     bytes raw_payload = 6;    //payload dei dati 
-    int64 timestamp_ms = 7;   // Timestamp iniettato in C++ (Hardware) per calcolare la latenza end-to-end
+    int64 timestamp_us = 7;   // Timestamp iniettato in C++ (Hardware) per calcolare la latenza end-to-end
     uint32 seq_num = 8;       // Sequence Number TCP per riordinare i pacchetti
     uint32 tcp_flags = 9;     // Flag grezzi del TCP (FIN, SYN, RST...) estratti da Go per l'analisi in Python
 }

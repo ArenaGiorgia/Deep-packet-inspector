@@ -30,7 +30,7 @@ type NetworkPacket struct {
 	DestPort      int32  `protobuf:"varint,4,opt,name=dest_port,json=destPort,proto3" json:"dest_port,omitempty"`
 	Protocol      string `protobuf:"bytes,5,opt,name=protocol,proto3" json:"protocol,omitempty"`                           // Es: "TCP", "UDP"
 	RawPayload    []byte `protobuf:"bytes,6,opt,name=raw_payload,json=rawPayload,proto3" json:"raw_payload,omitempty"`     //payload dei dati
-	TimestampMs   int64  `protobuf:"varint,7,opt,name=timestamp_ms,json=timestampMs,proto3" json:"timestamp_ms,omitempty"` // Timestamp iniettato in C++ (Hardware) per calcolare la latenza end-to-end
+	TimestampUs   int64  `protobuf:"varint,7,opt,name=timestamp_us,json=timestampUs,proto3" json:"timestamp_us,omitempty"` // Timestamp iniettato in C++ (Hardware) per calcolare la latenza end-to-end
 	SeqNum        uint32 `protobuf:"varint,8,opt,name=seq_num,json=seqNum,proto3" json:"seq_num,omitempty"`                // Sequence Number TCP per riordinare i pacchetti
 	TcpFlags      uint32 `protobuf:"varint,9,opt,name=tcp_flags,json=tcpFlags,proto3" json:"tcp_flags,omitempty"`          // Flag grezzi del TCP (FIN, SYN, RST...) estratti da Go per l'analisi in Python
 	unknownFields protoimpl.UnknownFields
@@ -109,9 +109,9 @@ func (x *NetworkPacket) GetRawPayload() []byte {
 	return nil
 }
 
-func (x *NetworkPacket) GetTimestampMs() int64 {
+func (x *NetworkPacket) GetTimestampUs() int64 {
 	if x != nil {
-		return x.TimestampMs
+		return x.TimestampUs
 	}
 	return 0
 }
@@ -144,7 +144,7 @@ const file_packet_data_proto_rawDesc = "" +
 	"\bprotocol\x18\x05 \x01(\tR\bprotocol\x12\x1f\n" +
 	"\vraw_payload\x18\x06 \x01(\fR\n" +
 	"rawPayload\x12!\n" +
-	"\ftimestamp_ms\x18\a \x01(\x03R\vtimestampMs\x12\x17\n" +
+	"\ftimestamp_us\x18\a \x01(\x03R\vtimestampUs\x12\x17\n" +
 	"\aseq_num\x18\b \x01(\rR\x06seqNum\x12\x1b\n" +
 	"\ttcp_flags\x18\t \x01(\rR\btcpFlagsB\x11Z\x0f./router;routerb\x06proto3"
 

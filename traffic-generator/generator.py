@@ -38,16 +38,25 @@ class GeneratoreTraffico:
         ]
 
     def _invia_payload_tcp(self, payload: str, tipo_attacco: str) -> None:
-        """Apre un socket effimero, inietta il payload e lo richiude."""
+        """Apre un socket effimero, inietta il payload e lo richiude con micro-ritardi."""
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
                 sock.settimeout(1.0)
+                
+                # 1. Apertura connessione (Il sistema operativo invia il SYN)
                 sock.connect((self.target_ip, self.target_port))
+                time.sleep(0.05)  # Micro-pausa di 50ms per far elaborare il SYN a Go
+                
+                # 2. Invio del payload (Il sistema operativo invia il PSH)
                 sock.sendall(payload.encode("utf-8"))
-                print(f"  -> {tipo_attacco} inviato con successo.")
+                time.sleep(0.05)  # Micro-pausa di 50ms per far elaborare i dati
+                
+                print(f"   -> {tipo_attacco} inviato con successo.")
+            # 3. Uscendo automaticamente dal blocco 'with', il socket si chiude (Invia il FIN)
+            
         except ConnectionRefusedError:
             print(
-                f"  -> {tipo_attacco} creato (Rifiutato dal target, ma catturato dal C++)"
+                f"   -> {tipo_attacco} creato (Rifiutato dal target, ma catturato dal C++)"
             )
         except Exception as e:
             print(f"[ERRORE] Impossibile generare traffico: {e}")

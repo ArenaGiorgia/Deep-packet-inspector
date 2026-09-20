@@ -15,6 +15,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"net"
+	"time"
 
 	"google.golang.org/protobuf/proto"
 )
@@ -42,7 +43,7 @@ func AvviaSmistatorePacchetti(packetChannel <-chan *router.NetworkPacket, hub *W
 		// DECODIFICA IPv4 (Livello 3 - Network)
 		// Estraiamo la lunghezza dell'header IP (mascherando con & 0x0F)
 		lunghezzaHeaderIP := int(frameRete[14]&0x0F) * 4
-		
+
 		// Il protocollo di trasporto si trova al byte 9 dell'header IP (14 + 9 = 23)
 		protocolloIP := frameRete[23]
 
@@ -50,7 +51,7 @@ func AvviaSmistatorePacchetti(packetChannel <-chan *router.NetworkPacket, hub *W
 		switch protocolloIP {
 		case 6: // Protocollo TCP (Livello 4 - Transport)
 			inizioTCP := 14 + lunghezzaHeaderIP
-			
+
 			// Verifica di sicurezza: l'header TCP minimo è di 20 byte
 			if len(frameRete) < inizioTCP+20 {
 				continue
@@ -59,10 +60,10 @@ func AvviaSmistatorePacchetti(packetChannel <-chan *router.NetworkPacket, hub *W
 			// Estraiamo le porte leggendo blocchi di 2 byte (Uint16)
 			portaSorgente := binary.BigEndian.Uint16(frameRete[inizioTCP : inizioTCP+2])
 			portaDestinazione := binary.BigEndian.Uint16(frameRete[inizioTCP+2 : inizioTCP+4])
-			
+
 			// Sequence Number (Uint32) vitali per il riassemblaggio in Python
 			numeroSequenza := binary.BigEndian.Uint32(frameRete[inizioTCP+4 : inizioTCP+8])
-			
+
 			// Flag TCP (FIN, SYN, RST, PSH, ACK, URG) localizzati al byte 13
 			flagTCP := frameRete[inizioTCP+13]
 
@@ -95,19 +96,25 @@ func AvviaSmistatorePacchetti(packetChannel <-chan *router.NetworkPacket, hub *W
 				connessionePython.Write(datiSerializzati)
 			}
 
-			//  Estrazione Flag TCP per la Dashboard Web 
+			//  Estrazione Flag TCP per la Dashboard Web
 			tipoTraffico := "ACK"
 			switch {
 			case flagTCP&0x02 != 0:
 				tipoTraffico = "SYN"
+			case flagTCP&0x04 != 0:
+				tipoTraffico = "RST"
 			case flagTCP&0x01 != 0:
 				tipoTraffico = "FIN"
 			case len(datiTCP) > 0:
 				tipoTraffico = "PSH"
 			}
 
-			// Invio della notifica formattata alla Dashboard
-			messaggioWeb := fmt.Sprintf("%s|%s:%d|%s:%d", tipoTraffico, ipSorgente, portaSorgente, ipDestinazione, portaDestinazione)
+			// Catturiamo il timestamp interno di Go in microsecondi
+			timestampGo := time.Now().UnixMicro()
+
+			//Inviamo tutte e due i timestamp C++ e Go
+			messaggioWeb := fmt.Sprintf("%s|%s:%d|%s:%d|%d|%d", tipoTraffico, ipSorgente, portaSorgente, ipDestinazione, portaDestinazione, rawPacket.TimestampUs, timestampGo)
+
 			hub.DiffondiAllarme([]byte(messaggioWeb))
 
 		case 17: // Protocollo UDP (Predisposizione per sviluppi futuri)

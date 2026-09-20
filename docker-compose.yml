@@ -29,12 +29,7 @@ services:
     build: 
       context: . 
       dockerfile: sensor-cpp/Dockerfile
-<<<<<<< HEAD
     # network_mode: "service:router" fonde lo stack di rete: il sensore può usare "localhost" per raggiungere il router
-=======
-    env_file:
-      - .env
->>>>>>> 567c2b76a32d627efff0f167000e0f7d3ff4c3d7
     network_mode: "service:router"
     cap_add:
       - NET_ADMIN

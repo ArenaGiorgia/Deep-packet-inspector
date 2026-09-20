@@ -67,7 +67,9 @@ class AnalizzatoreLogico:
                     continue
 
                 # TIMING (Telemetria End-to-End)
-                latenza = self.monitor.record_latency(packet.timestamp_ms)
+                # Passiamo il nuovo campo. Dividiamo per 1000 per riportarlo in millisecondi 
+                # e mantenere corretto il calcolo della latenza!
+                latenza = self.monitor.record_latency(packet.timestamp_us / 1000.0)
 
                 # SESSION REASSEMBLY (Gestione TCP)
                 # FIX LOGICO: Ora passiamo tcp_flags invece di flag_tcp (in linea con il Protobuf!)
