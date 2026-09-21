@@ -10,8 +10,9 @@ services:
       dockerfile: analyzer-python/Dockerfile
     networks:
       - dpi_network
-    ports:
-      - "9001:9001/udp"
+    
+    volumes:
+      - ./logs:/app/logs
 
   # 2. Il Gateway/Router Concorrente (Go)
   router:

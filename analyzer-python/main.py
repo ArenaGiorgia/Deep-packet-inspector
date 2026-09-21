@@ -35,7 +35,7 @@ class AnalizzatoreLogico:
 
         # Configurazione del logging su file
         logging.basicConfig(
-            filename="allarmi_dpi.log",
+            filename="logs/allarmi_dpi.log",
             level=logging.WARNING,
             format="%(asctime)s | %(message)s",
         )
@@ -67,7 +67,7 @@ class AnalizzatoreLogico:
                     continue
 
                 # TIMING (Telemetria End-to-End)
-                # Passiamo il nuovo campo. Dividiamo per 1000 per riportarlo in millisecondi 
+                # Passiamo il nuovo campo. Dividiamo per 1000 per riportarlo in millisecondi
                 # e mantenere corretto il calcolo della latenza!
                 latenza = self.monitor.record_latency(packet.timestamp_us / 1000.0)
 

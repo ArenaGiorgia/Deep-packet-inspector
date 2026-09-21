@@ -1,4 +1,5 @@
 import re
+from timing import misura_tempo_esecuzione
 
 
 class AnalizzatoreDPI:
@@ -25,6 +26,7 @@ class AnalizzatoreDPI:
             r"(?i)(^user\s|^pass\s|\bpassword\b)", re.MULTILINE
         )
 
+    @misura_tempo_esecuzione
     def analizza_payload(
         self, protocollo: str, payload_grezzo: bytes
     ) -> tuple[bool, str]:
