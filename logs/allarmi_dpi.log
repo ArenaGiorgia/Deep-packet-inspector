@@ -176,3 +176,543 @@ Host: router
 Content-Type: application/json
 
 {"username": "admin", "password": "123456"} (Latenza: 64.16 ms)
+2026-09-21 09:06:31,344 | 🚨 MINACCIA DA 172.19.0.3:52070 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS letmein (Latenza: 167.32 ms)
+2026-09-21 09:06:32,343 | 🚨 MINACCIA DA 172.19.0.3:52080 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "qwerty"} (Latenza: 564.92 ms)
+2026-09-21 09:06:35,316 | 🚨 MINACCIA DA 172.19.0.3:50486 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "P@ssw0rd"} (Latenza: 403.74 ms)
+2026-09-21 09:06:36,420 | 🚨 MINACCIA DA 172.19.0.3:50504 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS test (Latenza: 259.12 ms)
+2026-09-21 09:06:40,315 | 🚨 MINACCIA DA 172.19.0.3:50554 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "letmein"} (Latenza: 997.98 ms)
+2026-09-21 09:06:45,315 | 🚨 MINACCIA DA 172.19.0.3:43730 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "password"} (Latenza: 955.36 ms)
+2026-09-21 09:06:48,319 | 🚨 MINACCIA DA 172.19.0.3:43788 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "letmein"} (Latenza: 92.12 ms)
+2026-09-21 09:06:54,317 | 🚨 MINACCIA DA 172.19.0.3:37500 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "qwerty"} (Latenza: 817.23 ms)
+2026-09-21 09:06:56,315 | 🚨 MINACCIA DA 172.19.0.3:37530 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "admin123"} (Latenza: 967.21 ms)
+2026-09-21 09:06:59,316 | 🚨 MINACCIA DA 172.19.0.3:37580 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "admin123"} (Latenza: 944.30 ms)
+2026-09-21 09:07:04,388 | 🚨 MINACCIA DA 172.19.0.3:51432 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS root (Latenza: 245.05 ms)
+2026-09-21 09:07:05,316 | 🚨 MINACCIA DA 172.19.0.3:51434 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "letmein"} (Latenza: 562.77 ms)
+2026-09-21 09:07:06,308 | 🚨 MINACCIA DA 172.19.0.3:51458 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "qwerty"} (Latenza: 320.78 ms)
+2026-09-21 09:07:14,312 | 🚨 MINACCIA DA 172.19.0.3:57732 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "admin"} (Latenza: 326.97 ms)
+2026-09-21 09:07:15,308 | 🚨 MINACCIA DA 172.19.0.3:57754 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "test"} (Latenza: 114.40 ms)
+2026-09-21 09:07:21,314 | 🚨 MINACCIA DA 172.19.0.3:57800 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "admin123"} (Latenza: 1000.93 ms)
+2026-09-21 09:07:21,329 | 🚨 MINACCIA DA 172.19.0.3:57802 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "admin"} (Latenza: 379.79 ms)
+2026-09-21 09:07:22,307 | 🚨 MINACCIA DA 172.19.0.3:57810 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS 123456 (Latenza: 739.86 ms)
+2026-09-21 09:07:22,314 | 🚨 MINACCIA DA 172.19.0.3:51186 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS admin (Latenza: 137.36 ms)
+2026-09-21 09:07:24,309 | 🚨 MINACCIA DA 172.19.0.3:51202 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS admin (Latenza: 918.95 ms)
+2026-09-21 09:07:25,307 | 🚨 MINACCIA DA 172.19.0.3:51212 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "123456"} (Latenza: 708.79 ms)
+2026-09-21 09:07:31,308 | 🚨 MINACCIA DA 172.19.0.3:51284 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "qwerty"} (Latenza: 650.09 ms)
+2026-09-21 09:07:39,300 | 🚨 MINACCIA DA 172.19.0.3:44414 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "123456"} (Latenza: 789.97 ms)
+2026-09-21 09:07:39,315 | 🚨 MINACCIA DA 172.19.0.3:44416 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS letmein (Latenza: 201.73 ms)
+2026-09-21 09:07:41,301 | 🚨 MINACCIA DA 172.19.0.3:44446 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS admin123 (Latenza: 376.74 ms)
+2026-09-21 09:07:42,301 | 🚨 MINACCIA DA 172.19.0.3:47016 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS 123456 (Latenza: 165.86 ms)
+2026-09-21 09:07:42,320 | 🚨 MINACCIA DA 172.19.0.3:44458 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS password (Latenza: 793.44 ms)
+2026-09-21 09:07:44,302 | 🚨 MINACCIA DA 172.19.0.3:47036 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS letmein (Latenza: 960.67 ms)
+2026-09-21 09:07:44,313 | 🚨 MINACCIA DA 172.19.0.3:47046 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "test"} (Latenza: 367.79 ms)
+2026-09-21 09:07:46,300 | 🚨 MINACCIA DA 172.19.0.3:47062 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS letmein (Latenza: 548.76 ms)
+2026-09-21 09:07:50,302 | 🚨 MINACCIA DA 172.19.0.3:47126 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS 123456 (Latenza: 931.72 ms)
+2026-09-21 09:07:51,302 | 🚨 MINACCIA DA 172.19.0.3:47158 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS test (Latenza: 121.51 ms)
+2026-09-21 09:07:52,301 | 🚨 MINACCIA DA 172.19.0.3:47174 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS P@ssw0rd (Latenza: 518.37 ms)
+2026-09-21 09:07:53,301 | 🚨 MINACCIA DA 172.19.0.3:39446 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS 123456 (Latenza: 313.17 ms)
+2026-09-21 09:07:54,302 | 🚨 MINACCIA DA 172.19.0.3:39464 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "P@ssw0rd"} (Latenza: 107.73 ms)
+2026-09-21 09:07:57,303 | 🚨 MINACCIA DA 172.19.0.3:39494 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS qwerty (Latenza: 92.86 ms)
+2026-09-21 09:07:59,301 | 🚨 MINACCIA DA 172.19.0.3:39520 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS P@ssw0rd (Latenza: 282.82 ms)
+2026-09-21 09:08:00,301 | 🚨 MINACCIA DA 172.19.0.3:39532 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS root (Latenza: 678.78 ms)
+2026-09-21 09:08:00,448 | 🚨 MINACCIA DA 172.19.0.3:39546 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS test (Latenza: 223.06 ms)
+2026-09-21 09:08:03,302 | 🚨 MINACCIA DA 172.19.0.3:58522 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "admin123"} (Latenza: 60.69 ms)
+2026-09-21 09:08:05,294 | 🚨 MINACCIA DA 172.19.0.3:58560 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "letmein"} (Latenza: 251.26 ms)
+2026-09-21 09:08:08,293 | 🚨 MINACCIA DA 172.19.0.3:58598 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS admin (Latenza: 237.57 ms)
+2026-09-21 09:08:09,294 | 🚨 MINACCIA DA 172.19.0.3:58610 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS test (Latenza: 33.26 ms)
+2026-09-21 09:08:14,293 | 🚨 MINACCIA DA 172.19.0.3:46572 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "admin123"} (Latenza: 72.40 ms)
+2026-09-21 09:08:16,294 | 🚨 MINACCIA DA 172.19.0.3:46594 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "123456"} (Latenza: 855.08 ms)
+2026-09-21 09:08:18,293 | 🚨 MINACCIA DA 172.19.0.3:46624 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS qwerty (Latenza: 443.04 ms)
+2026-09-21 09:08:19,293 | 🚨 MINACCIA DA 172.19.0.3:46636 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "P@ssw0rd"} (Latenza: 840.04 ms)
+2026-09-21 09:08:28,293 | 🚨 MINACCIA DA 172.19.0.3:49892 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "qwerty"} (Latenza: 149.91 ms)
+2026-09-21 09:08:29,294 | 🚨 MINACCIA DA 172.19.0.3:49904 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS qwerty (Latenza: 547.42 ms)
+2026-09-21 09:08:31,293 | 🚨 MINACCIA DA 172.19.0.3:49946 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS qwerty (Latenza: 134.99 ms)
+2026-09-21 09:39:50,264 | 🚨 MINACCIA DA 172.19.0.2:46864 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "password"} (Latenza: 56.16 ms)
+2026-09-21 09:39:52,314 | 🚨 MINACCIA DA 172.19.0.2:46890 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "qwerty"} (Latenza: 891.06 ms)
+2026-09-21 09:39:52,589 | 🚨 MINACCIA DA 172.19.0.2:54022 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS P@ssw0rd (Latenza: 546.74 ms)
+2026-09-21 09:39:54,263 | 🚨 MINACCIA DA 172.19.0.2:54034 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS admin123 (Latenza: 952.89 ms)
+2026-09-21 09:39:58,264 | 🚨 MINACCIA DA 172.19.0.2:54092 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS admin123 (Latenza: 183.93 ms)
+2026-09-21 09:40:05,263 | 🚨 MINACCIA DA 172.19.0.2:54304 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS admin123 (Latenza: 939.87 ms)
+2026-09-21 09:40:09,231 | 🚨 MINACCIA DA 172.19.0.2:54354 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "P@ssw0rd"} (Latenza: 7.33 ms)
+2026-09-21 09:40:10,229 | 🚨 MINACCIA DA 172.19.0.2:54356 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "123456"} (Latenza: 393.53 ms)
+2026-09-21 09:40:11,230 | 🚨 MINACCIA DA 172.19.0.2:54360 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "admin"} (Latenza: 791.12 ms)
+2026-09-21 09:40:12,230 | 🚨 MINACCIA DA 172.19.0.2:54378 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS P@ssw0rd (Latenza: 583.88 ms)
+2026-09-21 09:44:20,620 | 🚨 MINACCIA DA 172.19.0.3:47348 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS test (Latenza: 36.41 ms)
+2026-09-21 09:44:23,619 | 🚨 MINACCIA DA 172.19.0.3:43422 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "123456"} (Latenza: 22.83 ms)
+2026-09-21 09:44:25,619 | 🚨 MINACCIA DA 172.19.0.3:43454 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS letmein (Latenza: 215.05 ms)
+2026-09-21 09:44:26,620 | 🚨 MINACCIA DA 172.19.0.3:43460 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS letmein (Latenza: 9.55 ms)
+2026-09-21 09:44:28,620 | 🚨 MINACCIA DA 172.19.0.3:43478 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS admin123 (Latenza: 804.82 ms)
+2026-09-21 09:44:34,620 | 🚨 MINACCIA DA 172.19.0.3:53890 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS root (Latenza: 177.44 ms)
+2026-09-21 09:44:35,616 | 🚨 MINACCIA DA 172.19.0.3:53904 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS letmein (Latenza: 570.58 ms)
+2026-09-21 09:44:39,616 | 🚨 MINACCIA DA 172.19.0.3:53948 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS root (Latenza: 961.12 ms)
+2026-09-21 09:44:39,619 | 🚨 MINACCIA DA 172.19.0.3:53962 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS admin123 (Latenza: 362.05 ms)
+2026-09-21 09:44:40,616 | 🚨 MINACCIA DA 172.19.0.3:53988 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS letmein (Latenza: 153.87 ms)
+2026-09-21 09:44:42,615 | 🚨 MINACCIA DA 172.19.0.3:54020 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "root"} (Latenza: 948.26 ms)
+2026-09-21 09:44:45,616 | 🚨 MINACCIA DA 172.19.0.3:58128 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "password"} (Latenza: 937.31 ms)
+2026-09-21 09:44:47,615 | 🚨 MINACCIA DA 172.19.0.3:58152 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "admin"} (Latenza: 526.83 ms)
+2026-09-21 09:44:52,616 | 🚨 MINACCIA DA 172.19.0.3:51112 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "password"} (Latenza: 105.46 ms)
+2026-09-21 09:44:53,615 | 🚨 MINACCIA DA 172.19.0.3:51118 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS admin123 (Latenza: 502.57 ms)
+2026-09-21 09:44:55,615 | 🚨 MINACCIA DA 172.19.0.3:51150 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "password"} (Latenza: 94.63 ms)
+2026-09-21 09:44:58,617 | 🚨 MINACCIA DA 172.19.0.3:51186 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS admin (Latenza: 685.60 ms)
+2026-09-21 09:45:00,615 | 🚨 MINACCIA DA 172.19.0.3:51204 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS 123456 (Latenza: 863.20 ms)
+2026-09-21 09:45:03,616 | 🚨 MINACCIA DA 172.19.0.3:45950 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS admin123 (Latenza: 250.73 ms)
+2026-09-21 09:45:04,616 | 🚨 MINACCIA DA 172.19.0.3:45958 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "test"} (Latenza: 647.89 ms)
+2026-09-21 09:45:09,616 | 🚨 MINACCIA DA 172.19.0.3:46026 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS qwerty (Latenza: 226.60 ms)
+2026-09-21 09:45:12,615 | 🚨 MINACCIA DA 172.19.0.3:40292 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "letmein"} (Latenza: 212.59 ms)
+2026-09-21 09:45:13,616 | 🚨 MINACCIA DA 172.19.0.3:40320 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "root"} (Latenza: 8.59 ms)
+2026-09-21 09:45:16,615 | 🚨 MINACCIA DA 172.19.0.3:40364 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS P@ssw0rd (Latenza: 597.49 ms)
+2026-09-21 09:45:18,615 | 🚨 MINACCIA DA 172.19.0.3:40390 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "P@ssw0rd"} (Latenza: 790.14 ms)
+2026-09-21 09:45:20,616 | 🚨 MINACCIA DA 172.19.0.3:40424 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "qwerty"} (Latenza: 381.44 ms)
+2026-09-21 09:45:23,615 | 🚨 MINACCIA DA 172.19.0.3:60354 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "qwerty"} (Latenza: 368.20 ms)
+2026-09-21 09:45:25,616 | 🚨 MINACCIA DA 172.19.0.3:60376 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS password (Latenza: 561.08 ms)
+2026-09-21 09:45:27,616 | 🚨 MINACCIA DA 172.19.0.3:60404 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS test (Latenza: 152.17 ms)
+2026-09-21 09:45:30,617 | 🚨 MINACCIA DA 172.19.0.3:60450 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS password (Latenza: 142.41 ms)
+2026-09-21 09:45:32,616 | 🚨 MINACCIA DA 172.19.0.3:53476 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "admin123"} (Latenza: 334.14 ms)
+2026-09-21 09:45:35,612 | 🚨 MINACCIA DA 172.19.0.3:53526 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "test"} (Latenza: 317.76 ms)
+2026-09-21 09:45:48,614 | 🚨 MINACCIA DA 172.19.0.3:57720 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "letmein"} (Latenza: 670.77 ms)
+2026-09-21 09:45:51,613 | 🚨 MINACCIA DA 172.19.0.3:57778 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS root (Latenza: 55.61 ms)
+2026-09-21 09:45:54,613 | 🚨 MINACCIA DA 172.19.0.3:51160 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "password"} (Latenza: 41.61 ms)
+2026-09-21 09:45:57,613 | 🚨 MINACCIA DA 172.19.0.3:51216 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "admin123"} (Latenza: 29.90 ms)
+2026-09-21 09:46:00,613 | 🚨 MINACCIA DA 172.19.0.3:51286 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "qwerty"} (Latenza: 17.70 ms)
+2026-09-21 09:46:07,611 | 🚨 MINACCIA DA 172.19.0.3:58390 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS admin (Latenza: 993.50 ms)
+2026-09-21 09:46:08,611 | 🚨 MINACCIA DA 172.19.0.3:58416 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS qwerty (Latenza: 187.13 ms)
+2026-09-21 09:46:10,611 | 🚨 MINACCIA DA 172.19.0.3:58440 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS qwerty (Latenza: 981.69 ms)
+2026-09-21 09:46:10,614 | 🚨 MINACCIA DA 172.19.0.3:58442 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS letmein (Latenza: 382.20 ms)
+2026-09-21 09:46:14,611 | 🚨 MINACCIA DA 172.19.0.3:37586 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS password (Latenza: 161.02 ms)
+2026-09-21 09:46:16,610 | 🚨 MINACCIA DA 172.19.0.3:37592 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "root"} (Latenza: 954.22 ms)
+2026-09-22 11:06:50,719 | 🚨 MINACCIA DA 172.19.0.2:58262 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "letmein"} (Latenza: 483.87 ms)
+2026-09-22 11:06:51,724 | 🚨 MINACCIA DA 172.19.0.2:58276 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "root"} (Latenza: 783.78 ms)
+2026-09-22 11:06:53,684 | 🚨 MINACCIA DA 172.19.0.2:58310 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS test (Latenza: 738.65 ms)
+2026-09-22 11:06:56,669 | 🚨 MINACCIA DA 172.19.0.2:58344 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS qwerty (Latenza: 673.42 ms)
+2026-09-22 11:06:59,665 | 🚨 MINACCIA DA 172.19.0.2:51160 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS qwerty (Latenza: 982.29 ms)
+2026-09-22 11:07:01,665 | 🚨 MINACCIA DA 172.19.0.2:51186 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS P@ssw0rd (Latenza: 352.73 ms)
+2026-09-22 11:07:02,665 | 🚨 MINACCIA DA 172.19.0.2:51204 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "admin123"} (Latenza: 144.30 ms)
+2026-09-22 11:07:03,665 | 🚨 MINACCIA DA 172.19.0.2:51210 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "admin123"} (Latenza: 540.77 ms)
+2026-09-22 11:07:04,666 | 🚨 MINACCIA DA 172.19.0.2:51214 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "root"} (Latenza: 760.47 ms)
+2026-09-22 11:07:04,671 | 🚨 MINACCIA DA 172.19.0.2:51216 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "P@ssw0rd"} (Latenza: 163.39 ms)
+2026-09-22 11:07:05,665 | 🚨 MINACCIA DA 172.19.0.2:51226 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "root"} (Latenza: 548.90 ms)
+2026-09-22 11:07:06,665 | 🚨 MINACCIA DA 172.19.0.2:51230 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "qwerty"} (Latenza: 343.58 ms)
+2026-09-22 11:07:07,665 | 🚨 MINACCIA DA 172.19.0.2:51244 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS admin123 (Latenza: 55.59 ms)
+2026-09-22 11:07:14,665 | 🚨 MINACCIA DA 172.19.0.2:54918 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "admin"} (Latenza: 974.04 ms)
+2026-09-22 11:07:16,665 | 🚨 MINACCIA DA 172.19.0.2:54948 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "qwerty"} (Latenza: 532.20 ms)
+2026-09-22 11:07:17,665 | 🚨 MINACCIA DA 172.19.0.2:54966 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "admin"} (Latenza: 326.49 ms)
+2026-09-22 11:07:22,665 | 🚨 MINACCIA DA 172.19.0.2:33732 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS P@ssw0rd (Latenza: 488.96 ms)
+2026-09-22 11:07:23,665 | 🚨 MINACCIA DA 172.19.0.2:33744 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS password (Latenza: 884.04 ms)
+2026-09-22 11:07:27,667 | 🚨 MINACCIA DA 172.19.0.2:33820 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "password"} (Latenza: 48.63 ms)
+2026-09-22 11:07:29,661 | 🚨 MINACCIA DA 172.19.0.2:38188 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS admin (Latenza: 224.68 ms)
+2026-09-22 11:07:30,661 | 🚨 MINACCIA DA 172.19.0.2:38204 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "letmein"} (Latenza: 20.11 ms)
+2026-09-22 11:07:35,661 | 🚨 MINACCIA DA 172.19.0.2:38270 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS admin123 (Latenza: 799.58 ms)
+2026-09-22 11:07:36,661 | 🚨 MINACCIA DA 172.19.0.2:38286 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS P@ssw0rd (Latenza: 588.56 ms)
+2026-09-22 11:07:37,661 | 🚨 MINACCIA DA 172.19.0.2:38294 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS root (Latenza: 986.61 ms)
+2026-09-22 11:07:37,668 | 🚨 MINACCIA DA 172.19.0.2:38296 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS 123456 (Latenza: 389.26 ms)
+2026-09-22 11:07:38,661 | 🚨 MINACCIA DA 172.19.0.2:38300 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "P@ssw0rd"} (Latenza: 778.39 ms)
+2026-09-22 11:07:41,660 | 🚨 MINACCIA DA 172.19.0.2:56722 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS test (Latenza: 755.24 ms)
+2026-09-22 11:07:43,661 | 🚨 MINACCIA DA 172.19.0.2:56786 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "qwerty"} (Latenza: 345.28 ms)
+2026-09-22 11:07:46,661 | 🚨 MINACCIA DA 172.19.0.2:56812 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS password (Latenza: 932.86 ms)
+2026-09-22 11:07:47,661 | 🚨 MINACCIA DA 172.19.0.2:56850 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS root (Latenza: 124.20 ms)
+2026-09-22 11:07:47,666 | 🚨 MINACCIA DA 172.19.0.2:56834 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS admin (Latenza: 732.38 ms)
+2026-09-22 11:07:50,662 | 🚨 MINACCIA DA 172.19.0.2:37814 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS test (Latenza: 109.95 ms)
+2026-09-22 11:07:52,661 | 🚨 MINACCIA DA 172.19.0.2:37838 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "root"} (Latenza: 903.74 ms)
+2026-09-22 11:07:56,661 | 🚨 MINACCIA DA 172.19.0.2:37918 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS 123456 (Latenza: 81.17 ms)
+2026-09-22 11:07:59,659 | 🚨 MINACCIA DA 172.19.0.2:52756 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "qwerty"} (Latenza: 64.57 ms)
+2026-09-22 11:08:01,658 | 🚨 MINACCIA DA 172.19.0.2:52776 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "123456"} (Latenza: 257.87 ms)
+2026-09-22 11:08:02,658 | 🚨 MINACCIA DA 172.19.0.2:52786 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "123456"} (Latenza: 654.68 ms)
+2026-09-22 11:08:07,657 | 🚨 MINACCIA DA 172.19.0.2:52866 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS password (Latenza: 232.17 ms)
+2026-09-22 11:08:08,657 | 🚨 MINACCIA DA 172.19.0.2:52882 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS letmein (Latenza: 629.71 ms)
+2026-09-22 11:08:11,659 | 🚨 MINACCIA DA 172.19.0.2:54590 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "root"} (Latenza: 16.32 ms)
+2026-09-22 11:08:13,658 | 🚨 MINACCIA DA 172.19.0.2:54596 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "letmein"} (Latenza: 809.55 ms)
+2026-09-22 11:08:14,658 | 🚨 MINACCIA DA 172.19.0.2:54624 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS admin (Latenza: 4.27 ms)
+2026-09-22 11:08:15,658 | 🚨 MINACCIA DA 172.19.0.2:54636 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS admin123 (Latenza: 402.25 ms)
+2026-09-22 11:08:19,658 | 🚨 MINACCIA DA 172.19.0.2:35334 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "qwerty"} (Latenza: 182.93 ms)
+2026-09-22 11:08:22,658 | 🚨 MINACCIA DA 172.19.0.2:35362 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "root"} (Latenza: 766.08 ms)
+2026-09-22 11:08:24,657 | 🚨 MINACCIA DA 172.19.0.2:35388 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS admin123 (Latenza: 959.40 ms)
+2026-09-22 11:08:25,658 | 🚨 MINACCIA DA 172.19.0.2:35394 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "test"} (Latenza: 755.55 ms)
+2026-09-22 11:08:25,663 | 🚨 MINACCIA DA 172.19.0.2:35410 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "admin"} (Latenza: 158.83 ms)
+2026-09-22 11:08:32,654 | 🚨 MINACCIA DA 172.19.0.2:41438 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS test (Latenza: 528.69 ms)
+2026-09-22 11:08:34,655 | 🚨 MINACCIA DA 172.19.0.2:41484 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS root (Latenza: 120.46 ms)
+2026-09-22 11:08:38,654 | 🚨 MINACCIA DA 172.19.0.2:41536 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "password"} (Latenza: 503.67 ms)
+2026-09-22 11:08:39,655 | 🚨 MINACCIA DA 172.19.0.2:55638 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: USER admin
+PASS admin123 (Latenza: 299.92 ms)
+2026-09-22 11:08:41,655 | 🚨 MINACCIA DA 172.19.0.2:55684 | [ALERT TCP] Dati sensibili in chiaro rilevati | Payload: POST /api/login HTTP/1.1
+Host: router
+Content-Type: application/json
+
+{"username": "admin", "password": "password"} (Latenza: 491.71 ms)

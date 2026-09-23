@@ -1,23 +1,22 @@
-/*Estrae in modo asincrono i pacchetti dalla coda gestita da packet_handler.cpp. 
-Legge gli header di base (IP e porte), popola la struttura Protobuf, serializza i dati in formato binario
- compresso e li spara via socket di rete verso il microservizio in Go.*/
+/*Il consumer estrae in modo asincrono i pacchetti dalla coda gestita da packet_handler.cpp. Legge gli 
+header di base (IP e porte), popola la struttura Protobuf, serializza i dati in formato binario
+compresso e li spara via socket di rete verso il microservizio in Go.*/
 
 #include "consumer.h"
 #include <iostream> 
-#include <sys/socket.h> // Librerie standard di Linux/Mac per gestire le connessioni di rete (Socket)
-#include <arpa/inet.h> //tradurre le "coordinate" della connessione (indirizzo IP e porta) dal formato leggibile dal computer locale a quello standard richiesto dalla rete.
+#include <sys/socket.h>  //librerie standard di Linux per gestire le connessioni di rete della socket
+#include <arpa/inet.h>   //tradurre indirizzo IP e porta dal formato leggibile dal computer locale a quello standard richiesto dalla rete.
 #include <unistd.h>
-#include <netdb.h>      // Fornisce gethostbyname per risolvere nomi di dominio (come "router") in IP
-#include <cstring>      // Per gestire la memoria (memset, memcpy)
-#include <chrono>       // Per misurare i tempi di attesa (sleep)
-#include <thread>       // Per mettere in pausa il thread durante i tentativi di connessione
+#include <netdb.h>      //fornisce gethostbyname per risolvere nomi di dominio (come "router") in IP
+#include <cstring>      //per gestire la memoria (memset, memcpy)
+#include <chrono>       //per misurare i tempi di attesa (sleep)
+#include <thread>       //per mettere in pausa il thread durante i tentativi di connessione
 #include <csignal>      //per la gestione del segnale SIGPIPE
 
 //costruttore 
 InoltroTraffico::InoltroTraffico(CodaPacchetti& coda_condivisa, const std::string& ip_destinazione, int porta_destinazione)
     : coda(coda_condivisa), indirizzo_ip(ip_destinazione), porta(porta_destinazione), socket_fd(-1), attivo(false) {
-    //socket_fd parte da -1 perché nei sistemi operativi i file descriptor validi partono da 0 in su. 
-    //-1 significa "nessuna connessione".
+    //i file descriptor validi partono da 0 in su. -1 nessuna connessione
 }
 
 //distruttore 
@@ -25,7 +24,7 @@ InoltroTraffico::~InoltroTraffico() {
     ferma(); //spegne tutto se l'oggetto viene distrutto
 }
 
-//Funzione privata per leggere lo stato in modo sicuro 
+//funzione per leggere lo stato in modo sicuro 
 bool InoltroTraffico::blocco_sicuro() {
     std::lock_guard<std::mutex> blocco(mutex_stato);
     return attivo;
@@ -34,47 +33,43 @@ bool InoltroTraffico::blocco_sicuro() {
 //creazione canale di comunicazione 
 bool InoltroTraffico::connetti_socket() {
    
-    // AF_INET = IPv4 e SOCK_STREAM = Protocollo TCP
+    // AF_INET: IPv4 e SOCK_STREAM : connessione affidabile e 0 di default come combinazione allora TCP 
     socket_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (socket_fd < 0) {
         return false; // Creazione fallita
     }
 
-    //Prepariamo l'indirizzo a cui "telefonare" (il microservizio Go)
+    //Prepariamo l'indirizzo a cui mandare a Go
     struct sockaddr_in indirizzo_server;
-    memset(&indirizzo_server, 0, sizeof(indirizzo_server)); // Puliamo la memoria per evitare "sporcizia"
+    memset(&indirizzo_server, 0, sizeof(indirizzo_server)); //Puliamo la memoria da cose che non servono
     indirizzo_server.sin_family = AF_INET;
     
-    // htons serve a convertire il numero della porta nel formato leggibile dalla rete (Network Byte Order)
+    //htons serve a convertire il numero della porta nel formato leggibile dalla rete Big Endian
     indirizzo_server.sin_port = htons(porta);
-    
-    
-    // LOGICA DI RISOLUZIONE IBRIDA (IP numerico o Nome DNS)
-    if (inet_pton(AF_INET, indirizzo_ip.c_str(), &indirizzo_server.sin_addr) <= 0) {
-        // Se non è un IP numerico (es. "127.0.0.1"), proviamo a risolverlo come nome di container
+
+    //Se non è un IP numerico (es. "127.0.0.1"), proviamo a risolverlo come nome di container
+    if (inet_pton(AF_INET, indirizzo_ip.c_str(), &indirizzo_server.sin_addr) <= 0) {   
         struct hostent* host = gethostbyname(indirizzo_ip.c_str());
         if (host == nullptr) {
             close(socket_fd);
             socket_fd = -1;
-            return false; // Impossibile trovare l'host desiderato
+            return false; // Impossibile trovare l'host 
         }
-        // Copiamo l'indirizzo IP binario tradotto
+
+        //copiamo l'indirizzo IP binario tradotto
         memcpy(&indirizzo_server.sin_addr.s_addr, host->h_addr_list[0], host->h_length);
     }
     
 
-    //Facciamo partire la "chiamata" verso Go
+    //Facciamo partire la chiamata verso Go
     int risultato_connessione = connect(socket_fd, (struct sockaddr*)&indirizzo_server, sizeof(indirizzo_server));
     if (risultato_connessione < 0) {
-        close(socket_fd); // Se Go non risponde, riagganciamo
-        
-    //Quando il sistema operativo crea un socket valido, gli assegna un numero intero positivo 
-    //(0, 1, ecc.).Inizializzarlo a -1 è la convenzione standard per indicare "nessuna connessione attiva".
-        socket_fd = -1;
+        close(socket_fd); // Se Go non risponde chiuduiamo
+        socket_fd = -1;  //per indicare "nessuna connessione attiva".
         return false;
     }
 
-    return true; // Connessione stabilita
+    return true; //connessione stabilita
 }
 
 //avviamento 
@@ -96,7 +91,7 @@ void InoltroTraffico::avvia() {
     std::cout << " Consumer di C++: connessione verso Go (" << indirizzo_ip << ":" << porta << ") stabilita" << std::endl;
 
     {
-        // Acquisiamo il lucchetto prima di accendere il motore
+        //acquisiamo il lucchetto prima di accendere il motore
         std::lock_guard<std::mutex> blocco(mutex_stato);
         attivo = true;
     }
@@ -106,17 +101,17 @@ void InoltroTraffico::avvia() {
 
 void InoltroTraffico::ferma() {
     {
-        // Acquisiamo il lucchetto prima di spegnere
+        //acquisiamo il lucchetto prima di spegnere
         std::lock_guard<std::mutex> blocco(mutex_stato);
         attivo = false;
     }
 
-    // Sincronizziamo il thread
+    //sincronizziamo il thread
     if (thread_invio.joinable()) {
         thread_invio.join();
     }
 
-    // Chiudiamo fisicamente la connessione di rete, rilasciando la risorsa di rete
+    //chiudiamo fisicamente la connessione di rete
     if (socket_fd != -1) {
         close(socket_fd);
         socket_fd = -1;
@@ -130,39 +125,37 @@ bool InoltroTraffico::invia_tutto(const char* dati, int lunghezza) {
     // Continuiamo finché non abbiamo inviato tutti i byte richiesti
     while (byte_inviati < lunghezza) {
 
-        // Proviamo a inviare il pezzo di dati che manca
+        //Inviamo il pezzo di dati che manca
         int risultato = send(socket_fd, dati + byte_inviati, lunghezza - byte_inviati, MSG_NOSIGNAL);
         //Linux per default invia il segnale SIGPIPE al processo, che termina il programma immediatamente
         //usiamo MSG_NOSIGNAL per gestire il segnale SIGPIPE e ignorarlo
 
-        // Se send() restituisce un numero <= 0, la connessione è caduta
         if (risultato <= 0) {
             std::cerr << "Errore: invio fallito, connessione con Go probabilmente caduta.\n";
-            return false; // usciamo 
+            return false;  
         }
 
-        // Aggiorniamo il conteggio di quanto abbiamo inviato finora
+        //aggiorniamo il conteggio di quanto abbiamo inviato finora
         byte_inviati = byte_inviati + risultato;
     }
 
-    return true; // tutto inviato correttamente
+    return true;
 }
 
 
 void InoltroTraffico::ciclo_di_invio() {
     
-    //Sostituito "attivo" con la chiamata sicura blocco_sicuro()
     while (blocco_sicuro()) {
         
-        //preleviamo il pacchetto, se la coda è vuota, il thread si mette a dormire da solo non consumando  CPU.
+        //preleviamo il pacchetto, se la coda è vuota, il thread si mette a dormire da solo non consumando CPU.
         auto pacchetto_ricevuto = coda.pop();
 
-        // Se pop() restituisce nullptr, significa che il programma si sta spegnendo
+        //Se pop() restituisce nullptr, significa che il programma si sta spegnendo
         if (pacchetto_ricevuto == nullptr) {
             break; // Usciamo dal ciclo while
         }
 
-        //Trasformiamo l'oggetto Protobuf in una stringa di byte (serializzazione)
+        //trasformiamo l'oggetto Protobuf in una stringa di byte (serializzazione)
         std::string dati_serializzati;
         pacchetto_ricevuto->SerializeToString(&dati_serializzati);
 
@@ -171,20 +164,20 @@ void InoltroTraffico::ciclo_di_invio() {
         // htonl() converte l'intero a 32 bit nel Network Byte Order (Big Endian)
         uint32_t dimensione_pacchetto = htonl(dati_serializzati.size());
         
-        // Prima inviamo la dimensione del pacchetto (4 byte)
+        //prima inviamo la dimensione del pacchetto (4 byte)
         bool primo_check = invia_tutto((const char*) &dimensione_pacchetto, sizeof(dimensione_pacchetto));
 
-        // Se il primo invio è andato bene, inviamo il pacchetto vero e proprio
+        //se il primo invio è andato bene, inviamo il pacchetto vero e proprio
         bool secondo_check = false;
         if (primo_check) {
             secondo_check = invia_tutto(dati_serializzati.c_str(), dati_serializzati.size());
         }
 
-        // Se uno dei due invii è fallito, ci fermiamo
+        //se uno dei due invii è fallito, ci fermiamo
         if (!primo_check || !secondo_check) {
             std::lock_guard<std::mutex> blocco(mutex_stato);
             attivo = false;
-            break;
+            break; //usciamo dal while 
         }
        
     }

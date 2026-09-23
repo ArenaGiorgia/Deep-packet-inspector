@@ -8,37 +8,37 @@
 class InoltroTraffico {
 private:
     
-    // Usiamo sempre il reference & per lavorare sulla stessa coda riempita dal Producer
+    //Lavoriamo sempre sulla stessa coda riempita dal Producer
     CodaPacchetti& coda;
-
-    //coordinate del microservizio di GO 
-    //L'indirizzo IP (es. "127.0.0.1") 
+ 
+    //L'indirizzo IP di GO  
     std::string indirizzo_ip;
 
-    //la porta (es. 8080) a cui spediremo i dati
+    //la porta a cui spediamo i dati
     int porta;
 
-    //La socket come canale di comunicazione
-    // È un numero intero (File Descriptor) che il sistema operativo ci dà per identificare la connessione.
+
+    //un numero intero (File Descriptor) che il SO ci dà nella socket per identificare la connessione
     int socket_fd; 
 
-    
-    // Variabile di stato e semaforo dedicato per lo spegnimento in modo pulito
+    //variabile di stato per lo spegnimento in modo pulito
     bool attivo;
 
-    std::mutex mutex_stato; //mutex per proteggere il bool  
+    //mutex per proteggere il bool
+    std::mutex mutex_stato;   
 
-    // Funzione privata per leggere lo stato in modo sicuro 
+    //la funzione per leggere lo stato in modo sicuro 
     bool blocco_sicuro();
 
     //per lavorare in backgorund e inoltrare i pacchetti 
     std::thread thread_invio;
 
     
-    // La funzione privata che gira in loop: preleva dalla coda, serializza e spedisce.
-    void ciclo_di_invio();
-    /*Qui dentro userò la funzione pop() che ho scritto in CodaPacchetti. Prenderò il pacchetto, chiederò
+    //la funzione che gira in loop dove preleviamo dalla coda, serializziamo e spediamo
+    /*Qui dentro userò la funzione pop() scritta in CodaPacchetti. Prenderò il pacchetto, chiederò
      a Protobuf di convertirlo in un array di byte (serializzazione) e lo invierò sul socket*/
+    void ciclo_di_invio();
+    
 
     //Tenta di instaurare la connessione TCP con Go
     bool connetti_socket();
@@ -47,13 +47,13 @@ private:
     bool invia_tutto(const char* dati, int lunghezza);
 
 public:
-    // Costruttore: chiede la coda condivisa e le coordinate di destinazione (IP e porta)
+    //il Costruttore
     InoltroTraffico(CodaPacchetti& coda_condivisa, const std::string& ip_destinazione, int porta_destinazione);
 
-    // Distruttore: pulisce la memoria e chiude la connessione
+    //il Distruttore
     ~InoltroTraffico();
 
-    // Metodi per accendere e spegnere il consumer dall'esterno
+    //le funzioni per accendere e spegnere il consumer dall'esterno
     void avvia();
     void ferma();
 };

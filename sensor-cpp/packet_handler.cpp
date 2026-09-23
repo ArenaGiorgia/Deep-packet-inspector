@@ -1,29 +1,24 @@
-/*(La Coda): L'area di transito sicura. Implementa una coda thread-safe utilizzando 
-i semafori (std::mutex e std::condition_variable) per sincronizzare la lettura e la scrittura. 
-Sfrutta i puntatori intelligenti (std::unique_ptr) per trasferire i blocchi di memoria tra i thread 
-senza causare memory leak o crash.*/
+/*Implementa una coda thread-safe utilizzando i semafori (std::mutex e std::condition_variable) 
+per sincronizzare la lettura e la scrittura. Sfrutta i puntatori intelligenti (std::unique_ptr) per
+ trasferire i blocchi di memoria tra i thread senza causare memory leak o crash.*/
 
 #include "packet_handler.h" //richiamiamo la classe codaPacchetti 
 
 
-//producer: Inserisce i pacchetti nella coda
+//producer: inserisce i pacchetti nella coda
 void CodaPacchetti::push(std::unique_ptr<packet_inspector::NetworkPacket> pacchetto) {
     
     //Mettiamo in pausa gli altri thread finché non abbiamo finito di inserire
     std::lock_guard<std::mutex> blocco_esclusivo(mutex); 
-   // un blocco intelligente basato su una regola chiamata RAII (Resource Acquisition Is Initialization).
-  /*Invece di bloccare il semaforo a mano con mutex.lock() e ricordarci di sbloccarlo alla fine con 
-   mutex.unlock(), usiamo lock_guard. Appena questa riga viene eseguita, il semaforo diventa rosso.
-   Quando la funzione finisce, l'oggetto blocco viene distrutto automaticamente dal C++ e il semaforo 
-   torna verde.*/
+ 
 
-   //La coda è piena perche consumer lento o disconnesso 
+   //La coda è piena perche il consumer è lento oppure è disconnesso 
    if (coda.size() >= capacita_massima) { 
-    //buttiamo via il pacchetto più vecchio in testa alla coda per privelegiare i dati recenti. 
-    coda.pop();  //grazie agli smart pointer viene invocato il distruttore del pacchetto quando si fa la pop e libera memoria    
+    //buttiamo via il pacchetto più vecchio in testa per privelegiare i dati recenti. 
+    coda.pop();      
     }
 
-    //Spostiamo il pacchetto dentro la nostra coda (Non stiamo facendo una copia del pacchetto in memoria)
+    //Spostiamo il pacchetto dentro la nostra coda 
     coda.push(std::move(pacchetto));
     
     //Svegliamo il consumer per avvisarlo che c'è un nuovo pacchetto pronto 
@@ -32,7 +27,7 @@ void CodaPacchetti::push(std::unique_ptr<packet_inspector::NetworkPacket> pacche
 
 
 
-//consumer: estrai i pacchetti dalla coda
+//consumer: estrae i pacchetti dalla coda
 std::unique_ptr<packet_inspector::NetworkPacket> CodaPacchetti::pop() {
 
 
@@ -42,36 +37,33 @@ std::unique_ptr<packet_inspector::NetworkPacket> CodaPacchetti::pop() {
 
     
     //Mettiamo in pausa il thread finché la coda è vuota. 
-    while (coda.empty() && !spegnimento) { //coda vuota e spegnimento=FALSE che diventa con ! VERO 
+    while (coda.empty() && !spegnimento) {  
         condizione.wait(blocco); //apre il lucchetto unique_lock e aspetta che arriva notify_one
     }
 
-    //Se stiamo spegnendo il programma e non ci sono più pacchetti, restituiamo nulla.
+    //Se stiamo spegnendo il programma e non ci sono più pacchetti restituiamo il puntatore a nullo
     if (spegnimento && coda.empty()) {
         return nullptr;
     }
 
-    //c'è un pacchetto. Lo prendiamo, lo togliamo alla coda e lo mettiamo in pacchetto estratto.
-    auto pacchetto_estratto = std::move(coda.front()); 
-    //coda.front legge il primo pacchetto in cima alla fila senza rimuoverlo.
+    //togliamo il pacchetto dalla coda e lo mettiamo in pacchetto estratto.
+    auto pacchetto_estratto = std::move(coda.front()); //coda.front legge il primo pacchetto in cima alla fila senza rimuoverlo
     
-    coda.pop(); //Distrugge l'elemento in cima alla fila. 
-    //Ecco perché prima dobbiamo salvare il pacchetto in pacchetto_estratto tramite move
+    //rimuoviamo l elemento in cima alla fila
+    coda.pop(); 
 
     return pacchetto_estratto;
 }
 
-//Tasto di emergenza: spegne tutto in maniera pulita
+//per spegnere tutto in maniera sicura
 void CodaPacchetti::stop() {
     
-    //Blocchiamo la coda per sicurezza
+    //blocchiamo la coda per sicurezza
     std::lock_guard<std::mutex> blocco_esclusivo(mutex);
     
     //settiamo a vero il flag dello spegnimento 
     spegnimento = true;
     
-    //Svegliamo gli eventuali thread rimasti addormentati in attesa
-    //A differenza di notify_one (che sveglia un thread a caso), questo sveglia tutti i thread in ascolto.
-    //Costringe tutti i consumatori a svegliarsi,ma ovviamente solo 1 prenderà il pacchetto 
+    //Svegliamo tutti i thread in ascolto non solo uno come prima con notify_one.
     condizione.notify_all();
 }
