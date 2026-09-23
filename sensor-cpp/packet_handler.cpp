@@ -31,7 +31,7 @@ void CodaPacchetti::push(std::unique_ptr<packet_inspector::NetworkPacket> pacche
 std::unique_ptr<packet_inspector::NetworkPacket> CodaPacchetti::pop() {
 
 
-    //Simile a lock_guard, ma più flessibile. Puo essere sbloccato quando il producer inserisce un nuovo pacchetto in coda
+    //Simile a lock_guard ma puo essere sbloccato quando il producer inserisce un nuovo pacchetto in coda
     //unique_lock lavora in coppia con la variabile "condizione"
     std::unique_lock<std::mutex> blocco(mutex); 
 

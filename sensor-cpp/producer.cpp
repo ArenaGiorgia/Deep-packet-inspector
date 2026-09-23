@@ -1,7 +1,7 @@
 /* Il Producer utilizza la libreria di basso livello libpcap per mettere la scheda di rete in ascolto.
  Il suo unico compito è intercettare i byte grezzi in transito il più velocemente possibile e riversarli
  nella coda di memoria condivisa, senza perdere cicli CPU per analizzarli.*/
-
+ 
 #include "producer.h"
 #include <iostream>
 
@@ -38,7 +38,7 @@ void CatturaTraffico::avvia() {
     }
 
     
-    //filtro BPF(Berkeley Packet Filter)
+    //filtro Berkeley Packet Filter "Ignora tutto il traffico generato dai nostri stessi microservizi"
     //escludiamo il traffico interno (porte dei container Go e Python)
     struct bpf_program filtro;
     std::string regola_filtro = "not port 8080 and not port 8081 and not port 9001 and not port 9002";
@@ -64,7 +64,7 @@ void CatturaTraffico::avvia() {
 void CatturaTraffico::ferma() {
     if (!blocco_sicuro()) return; //Se siamo già fermi usciamo
     
-    //Questo farà uscire il thread dal suo ciclo "while"
+    //Questo farà uscire il thread dal suo ciclo "while" in cattura
     {
         std::lock_guard<std::mutex> lock(mutex_stato);
         attivo = false; 

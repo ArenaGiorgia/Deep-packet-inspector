@@ -61,7 +61,7 @@ bool InoltroTraffico::connetti_socket() {
     }
     
 
-    //Facciamo partire la chiamata verso Go
+    //Facciamo partire la chiamata verso Go (handshake a tre vie)
     int risultato_connessione = connect(socket_fd, (struct sockaddr*)&indirizzo_server, sizeof(indirizzo_server));
     if (risultato_connessione < 0) {
         close(socket_fd); // Se Go non risponde chiuduiamo
