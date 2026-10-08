@@ -57,5 +57,5 @@ La gestione dell'intera infrastruttura è centralizzata tramite Docker Compose.
 * **Pannello KPI di Telemetria:** Monitoraggio costante del traffico totale analizzato, delle minacce rilevate e della latenza end-to-end calcolata dal modulo di performance in Python.
 
 ## Autori
-* Giorgia Arena
-* Alessio Tornabene
+* Giorgia Arena - Python e Go
+* Alessio Tornabene - C++
